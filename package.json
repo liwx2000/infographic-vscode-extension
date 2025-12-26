@@ -1,0 +1,56 @@
+{
+  "name": "vscode-infographic-markdown",
+  "displayName": "Infographic Markdown Preview",
+  "description": "Render AntV Infographic visualizations in Markdown preview",
+  "version": "1.0.0",
+  "publisher": "antv",
+  "icon": "infographic.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Visualization",
+    "Markdown"
+  ],
+  "keywords": [
+    "markdown",
+    "infographic",
+    "antv",
+    "visualization",
+    "preview"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewScripts": [
+      "./dist/preview.js"
+    ],
+    "markdown.previewStyles": [
+      "./media/infographic.css"
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^13.0.0",
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^2.22.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.3.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "@antv/infographic": "^0.1.0",
+    "eventemitter3": "^5.0.1",
+    "markdown-it": "^13.0.0"
+  }
+}
