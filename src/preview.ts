@@ -1,4 +1,64 @@
-import { Infographic } from '@antv/infographic';
+import { Infographic, ThemeConfig } from '@antv/infographic';
+
+/**
+ * Configuration interface for infographic rendering
+ */
+interface InfographicConfig {
+  theme: string;
+  width: string | number;
+  height: string | number;
+  padding: number | number[];
+}
+
+const DARK_THEME: ThemeConfig = {
+  colorBg: '#1F1F1F',
+  colorPrimary: '#61DDAA'
+};
+
+const LIGHT_THEME: ThemeConfig = {
+  colorBg: '#FFFFFF',
+  colorPrimary: '#FF356A'
+};
+
+/**
+ * Default configuration
+ */
+const DEFAULT_CONFIG: InfographicConfig = {
+  theme: 'light',
+  width: '100%',
+  height: '100%',
+  padding: 0
+};
+
+/**
+ * Load configuration from injected span element
+ * Config is injected at document level by markdown-it plugin
+ */
+function loadConfig(): InfographicConfig {
+  const configElement = document.getElementById('infographicMarkdown');
+  if (configElement) {
+    try {
+      const theme = configElement.getAttribute('data-theme');
+      const width = configElement.getAttribute('data-width');
+      const height = configElement.getAttribute('data-height');
+      const paddingStr = configElement.getAttribute('data-padding');
+      
+      const currentConfig: InfographicConfig = {
+        theme: theme || DEFAULT_CONFIG.theme,
+        width: width || DEFAULT_CONFIG.width,
+        height: height || DEFAULT_CONFIG.height,
+        padding: paddingStr ? JSON.parse(paddingStr) : DEFAULT_CONFIG.padding
+      };
+      
+      console.log('Loaded infographic configuration:', currentConfig);
+      return currentConfig;
+    } catch (e) {
+      console.error('Failed to parse infographic configuration:', e);
+    }
+  }
+  // No config element found or parsing failed, use defaults
+  return { ...DEFAULT_CONFIG };
+}
 
 /**
  * Cache for infographic instances
@@ -6,6 +66,7 @@ import { Infographic } from '@antv/infographic';
 interface InfographicCache {
   instance: any;
   syntax: string;
+  config: InfographicConfig; // Store config to detect changes
 }
 
 const infographicInstances = new Map<string, InfographicCache>();
@@ -61,10 +122,15 @@ function renderInfographic(container: HTMLElement): void {
     return;
   }
 
-  // Check if we have a cached instance with the same syntax
+  // Reload configuration before rendering to ensure we have the latest settings
+  const currentConfig = loadConfig();
+
+  // Check if we have a cached instance with the same syntax and config
   const cached = infographicInstances.get(id);
-  if (cached && cached.syntax === syntax) {
-    // Syntax hasn't changed, no need to re-render
+  const configChanged = cached && JSON.stringify(cached.config) !== JSON.stringify(currentConfig);
+  
+  if (cached && cached.syntax === syntax && !configChanged) {
+    // Syntax and config haven't changed, no need to re-render
     return;
   }
 
@@ -81,21 +147,30 @@ function renderInfographic(container: HTMLElement): void {
   container.innerHTML = '';
   container.classList.remove('error-state');
 
+  const theme = currentConfig.theme;
+  let themeConfig: ThemeConfig = LIGHT_THEME;
+  if (theme === 'dark') {
+    themeConfig = DARK_THEME;
+  }
+
   try {
-    // Create new infographic instance
+    // Create new infographic instance with configuration
     const infographic = new Infographic({
       container: container,
-      width: '100%',
-      height: '100%',
+      width: currentConfig.width,
+      height: currentConfig.height,
+      padding: currentConfig.padding,
+      themeConfig: themeConfig
     });
 
     // Render the infographic
     infographic.render(syntax);
 
-    // Cache the instance
+    // Cache the instance with config
     infographicInstances.set(id, {
       instance: infographic,
-      syntax: syntax
+      syntax: syntax,
+      config: { ...currentConfig }
     });
 
   } catch (error) {

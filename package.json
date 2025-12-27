@@ -2,7 +2,7 @@
   "name": "vscode-infographic-markdown",
   "displayName": "Infographic Markdown Preview",
   "description": "Render AntV Infographic visualizations in Markdown preview",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "antv",
   "icon": "infographic.png",
   "engines": {
@@ -30,7 +30,54 @@
     ],
     "markdown.previewStyles": [
       "./media/infographic.css"
-    ]
+    ],
+    "configuration": {
+      "title": "Infographic Markdown",
+      "properties": {
+        "infographicMarkdown.theme": {
+          "type": "string",
+          "enum": ["auto", "light", "dark"],
+          "default": "auto",
+          "description": "Theme for rendered infographics. 'auto' follows VSCode's color theme, 'light' forces light theme, 'dark' forces dark theme.",
+          "enumDescriptions": [
+            "Automatically detect and follow VSCode's color theme",
+            "Always use light theme",
+            "Always use dark theme"
+          ]
+        },
+        "infographicMarkdown.width": {
+          "type": [
+            "string",
+            "number"
+          ],
+          "default": "100%",
+          "patternErrorMessage": "Width must be a number followed by 'px' or '%' (e.g., '500' or '80%')",
+          "description": "Width of the rendered infographic. Supports absolute values (e.g., '500') or percentages (e.g., '100%')."
+        },
+        "infographicMarkdown.height": {
+          "type": [
+            "string",
+            "number"
+          ],
+          "default": "100%",
+          "patternErrorMessage": "Height must be a number followed by 'px' or '%' (e.g., '400' or '80%')",
+          "description": "Height of the rendered infographic. Supports absolute values (e.g., '400') or percentages (e.g., '100%')."
+        },
+        "infographicMarkdown.padding": {
+          "type": [
+            "number",
+            "array"
+          ],
+          "default": 0,
+          "description": "Padding inside the infographic container. Can be a single number (uniform padding) or an array of 4 numbers [top, right, bottom, left].",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build",

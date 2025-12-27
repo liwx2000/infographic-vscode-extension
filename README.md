@@ -6,6 +6,7 @@ A Visual Studio Code extension that renders [AntV Infographic](https://infograph
 
 - 📊 **Live Preview**: See your infographics render in real-time as you edit
 - 🎨 **Theme Support**: Automatically adapts to VSCode's light and dark themes
+- ⚙️ **Customizable**: Configure rendering options via VSCode settings
 - 📦 **Offline Ready**: All dependencies bundled - no CDN or internet required
 - 🔒 **Secure**: Fully compliant with VSCode's strict Content Security Policy
 - ⚡ **Fast**: Optimized rendering with smart caching and updates
@@ -161,6 +162,106 @@ data
       desc Description
 ```
 
+## Extension Settings
+
+Customize the rendering behavior through VSCode settings. Open Settings (Cmd+, / Ctrl+,) and search for "infographic".
+
+### Available Settings
+
+#### `infographicMarkdown.theme`
+
+**Type:** `string` (enum: `auto`, `light`, `dark`)  
+**Default:** `auto`
+
+Controls the color theme for rendered infographics:
+
+- `auto` - Automatically follows VSCode's current color theme (default)
+- `light` - Always use light theme regardless of VSCode theme
+- `dark` - Always use dark theme regardless of VSCode theme
+
+**Example:**
+
+```json
+{
+  "infographicMarkdown.theme": "auto"
+}
+```
+
+#### `infographicMarkdown.width`
+
+**Type:** `string`  
+**Default:** `"100%"`  
+**Pattern:** Must be a number followed by `px` or `%`
+
+Sets the width of rendered infographic containers:
+
+- Percentage values: `"100%"`, `"80%"`, `"50%"` (relative to container)
+- Absolute values: `"500px"`, `"800px"`, `"1200px"`
+
+**Example:**
+
+```json
+{
+  "infographicMarkdown.width": "800px"
+}
+```
+
+#### `infographicMarkdown.height`
+
+**Type:** `string`  
+**Default:** `"100%"`  
+**Pattern:** Must be a number followed by `px` or `%`
+
+Sets the height of rendered infographic containers:
+
+- Percentage values: `"100%"`, `"80%"` (relative to container)
+- Absolute values: `"400px"`, `"600px"`, `"800px"`
+
+**Example:**
+
+```json
+{
+  "infographicMarkdown.height": "600px"
+}
+```
+
+#### `infographicMarkdown.padding`
+
+**Type:** `number` or `array of numbers`  
+**Default:** `0`
+
+Defines the padding inside the infographic container:
+
+- Single number: Uniform padding on all sides (e.g., `16`)
+- Array of 4 numbers: Padding for [top, right, bottom, left] (e.g., `[10, 20, 10, 20]`)
+
+**Examples:**
+
+```json
+// Uniform padding
+{
+  "infographicMarkdown.padding": 16
+}
+
+// Individual sides
+{
+  "infographicMarkdown.padding": [10, 20, 10, 20]
+}
+```
+
+### Settings Example Configuration
+
+Here's a complete example configuration in your VSCode `settings.json`:
+
+```json
+{
+  "infographicMarkdown.theme": "auto",
+  "infographicMarkdown.width": "100%",
+  "infographicMarkdown.height": "600px",
+  "infographicMarkdown.padding": 16
+}
+```
+
 ## Error Handling
 
 The extension provides helpful error messages when:
@@ -178,6 +279,8 @@ The extension automatically adapts to your VSCode theme:
 - **Light themes**: Clean, bright appearance
 - **Dark themes**: Comfortable dark mode rendering
 - **High contrast**: Enhanced borders and visibility
+
+You can override the automatic theme detection using the `infographicMarkdown.theme` setting. See [Extension Settings](#extension-settings) for details.
 
 ## Performance
 
@@ -259,6 +362,7 @@ npm run package
 ```
 ├── src/
 │   ├── extension.ts          # Extension entry point
+│   ├── config.ts             # Configuration management
 │   ├── markdown-it-plugin.ts # Markdown-it plugin
 │   ├── preview.ts            # Preview script
 │   └── measury-stub.js       # Browser-compatible text measurement
@@ -285,14 +389,21 @@ MIT
 
 ## Changelog
 
-### 0.1.0 (Initial Release)
+### 1.0.0 (Current Release)
 
 - ✅ Markdown preview rendering for infographic code blocks
 - ✅ Bundled @antv/infographic library
 - ✅ Theme support (light, dark, high contrast)
+- ✅ Configurable rendering options (theme, width, height, padding)
+- ✅ Automatic theme detection
 - ✅ Live preview updates
 - ✅ Error handling and user feedback
 - ✅ CSP compliant implementation
+
+### 0.1.0 (Initial Release)
+
+- ✅ Basic infographic rendering
+- ✅ Theme support
 
 ## Support
 
