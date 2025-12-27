@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="https://raw.githubusercontent.com/liwx2000/infographic-vscode-extension/refs/heads/master/infographic.png" alt="AntV Infographic Logo" width="200"/>
+</div>
+
 # AntV Infographic Preview for VSCode
 
 A Visual Studio Code extension that renders [AntV Infographic](https://infographic.antv.vision) visualizations directly in your Markdown preview.
@@ -12,6 +16,13 @@ A Visual Studio Code extension that renders [AntV Infographic](https://infograph
 - ⚡ **Fast**: Optimized rendering with smart caching and updates
 
 ## Installation
+
+### From VSCode Marketplace
+
+1. Open VSCode
+2. Go to Extensions view (Cmd+Shift+X / Ctrl+Shift+X)
+3. Search for "Infographic Markdown Preview"
+4. Click "Install"
 
 ### From VSIX File
 
@@ -36,9 +47,9 @@ Then install the generated `.vsix` file using the steps above.
 
 ## Usage
 
-Create infographic visualizations in your Markdown files using code blocks with the `infographic` language identifier:
+Create infographic visualizations in your Markdown files using code blocks with the `infographic` language identifier.
 
-### Example 1: Simple Process Flow
+### Quick Example
 
 ````markdown
 ```infographic
@@ -54,117 +65,29 @@ data
 ```
 ````
 
-### Example 2: Growth Metrics with Icons
+### Syntax Reference
 
-````markdown
-```infographic
-infographic list-row-horizontal-icon-arrow
-data
-  title Customer Growth Engine
-  desc Multi-channel acquisition strategy
-  items
-    - label Lead Generation
-      value 18.6
-      desc Content marketing and outreach
-      icon company-021_v1_lineal
-    - label Conversion
-      value 12.4
-      desc Lead scoring and automation
-      icon antenna-bars-5_v1_lineal
-    - label Retention
-      value 32.1
-      desc Customer success programs
-      icon activities-037_v1_lineal
-```
-````
+For complete infographic syntax documentation, including:
 
-### Example 3: Organizational Structure
+- Available templates and layouts
+- Data structure and properties
+- Design customization options
+- Theme configuration
+- Icons and styling
 
-````markdown
-```infographic
-infographic list-column-vertical-icon
-data
-  title Product Team
-  desc Engineering Organization
-  items
-    - label Product Management
-      icon company-021_v1_lineal
-      children
-        - label Strategy
-          desc Product roadmap and planning
-        - label Execution
-          desc Feature delivery
-    - label Engineering
-      icon antenna-bars-5_v1_lineal
-      children
-        - label Frontend
-          desc User interface
-        - label Backend
-          desc Services and APIs
-```
-````
+Please visit the official documentation: **[AntV Infographic Syntax Guide](https://infographic.antv.vision/learn/infographic-syntax)**
 
-## Syntax Reference
+## Configuration
 
-### Basic Structure
+This extension provides several settings to customize the infographic rendering behavior.
 
-All infographics follow this basic pattern:
+### How to Configure
 
-```
-infographic [template-name]
-data
-  title [Optional title]
-  desc [Optional description]
-  items
-    - label [Item label]
-      desc [Item description]
-      value [Optional numeric value]
-      icon [Optional icon name]
-```
+1. Open VSCode Settings: `Cmd+,` (macOS) or `Ctrl+,` (Windows/Linux)
+2. Search for "infographic" in the settings search bar
+3. Adjust the settings according to your preferences
 
-### Available Templates
-
-- `list-row-simple-horizontal-arrow` - Simple horizontal process flow
-- `list-row-horizontal-icon-arrow` - Horizontal flow with icons and values
-- `list-column-vertical-icon` - Vertical list with hierarchical structure
-
-For more templates and detailed syntax, visit the [AntV Infographic Documentation](https://infographic.antv.vision/learn).
-
-### Design Customization
-
-You can customize the design using the `design` block:
-
-```
-infographic list-row-horizontal-icon-arrow
-design
-  structure default
-  gap 12
-  item card
-  showIcon true
-data
-  items
-    - label Example
-      desc Description
-```
-
-### Theme Customization
-
-Apply custom themes using the `theme` block:
-
-```
-infographic list-row-horizontal-icon-arrow
-theme
-  colorPrimary #1890ff
-  palette #1890ff #52c41a #faad14
-data
-  items
-    - label Example
-      desc Description
-```
-
-## Extension Settings
-
-Customize the rendering behavior through VSCode settings. Open Settings (Cmd+, / Ctrl+,) and search for "infographic".
+Alternatively, you can edit your `settings.json` file directly by pressing `Cmd+Shift+P` / `Ctrl+Shift+P` and selecting "Preferences: Open Settings (JSON)".
 
 ### Available Settings
 
@@ -386,24 +309,6 @@ MIT
 - [AntV Infographic Documentation](https://infographic.antv.vision)
 - [AntV Infographic Syntax Guide](https://infographic.antv.vision/learn/infographic-syntax)
 - [VSCode Extension API](https://code.visualstudio.com/api)
-
-## Changelog
-
-### 1.0.0 (Current Release)
-
-- ✅ Markdown preview rendering for infographic code blocks
-- ✅ Bundled @antv/infographic library
-- ✅ Theme support (light, dark, high contrast)
-- ✅ Configurable rendering options (theme, width, height, padding)
-- ✅ Automatic theme detection
-- ✅ Live preview updates
-- ✅ Error handling and user feedback
-- ✅ CSP compliant implementation
-
-### 0.1.0 (Initial Release)
-
-- ✅ Basic infographic rendering
-- ✅ Theme support
 
 ## Support
 
