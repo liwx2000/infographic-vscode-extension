@@ -69,12 +69,10 @@ export function infographicPlugin(md: MarkdownIt, options: PluginOptions): void 
       
       const id = generateId();
 
-      // Encode content for safe storage in data attribute
-      const encodedContent = Buffer.from(content).toString('base64');
+      // Store in code element for direct reading (Mermaid style)
+      const escapedContent = escapeHtml(content);
 
-      // Return container div with data attribute
-      // Config is injected at the document level, not per block
-      return `<div class="infographic-container" id="${id}" data-syntax="${encodedContent}"></div>\n`;
+      return `<div class="infographic-container" id="${id}" data-content="${escapedContent}"></div>`;
     }
 
     // Use default fence rendering for other code blocks
@@ -84,4 +82,18 @@ export function infographicPlugin(md: MarkdownIt, options: PluginOptions): void 
 
     return '';
   };
+}
+
+/**
+ * Escape HTML special characters
+ */
+function escapeHtml(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
 }
