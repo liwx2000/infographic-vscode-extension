@@ -72,15 +72,15 @@ interface InfographicCache {
 const infographicInstances = new Map<string, InfographicCache>();
 
 /**
- * Decode base64 encoded syntax
+ * Extract syntax content from container
  */
-function decodeSyntax(encoded: string): string {
-  try {
-    return atob(encoded);
-  } catch (e) {
-    console.error('Failed to decode syntax:', e);
-    return '';
+function extractSyntax(container: HTMLElement): string {
+  // Read from data attribute
+  const content = container.getAttribute('data-content');
+  if (content) {
+    return content;
   }
+  return '';
 }
 
 /**
@@ -103,14 +103,9 @@ function displayError(container: HTMLElement, message: string, error?: Error): v
  */
 function renderInfographic(container: HTMLElement): void {
   const id = container.id;
-  const encodedSyntax = container.getAttribute('data-syntax');
-
-  if (!encodedSyntax) {
-    displayError(container, 'No syntax data found');
-    return;
-  }
-
-  const syntax = decodeSyntax(encodedSyntax);
+  
+  // Extract syntax from code element (similar to Mermaid approach)
+  const syntax = extractSyntax(container);
 
   if (!syntax || syntax.trim() === '') {
     container.innerHTML = `
@@ -161,7 +156,7 @@ function renderInfographic(container: HTMLElement): void {
       height: currentConfig.height,
       padding: currentConfig.padding,
       themeConfig: themeConfig
-    });
+    } as any);
 
     // Render the infographic
     infographic.render(syntax);
@@ -249,6 +244,14 @@ function setupObserver(): void {
         needsUpdate = true;
         break;
       }
+      
+      // Check if content of source elements changed
+      if (mutation.type === 'characterData' ||
+          (mutation.target instanceof HTMLElement && 
+           mutation.target.classList.contains('infographic-source'))) {
+        needsUpdate = true;
+        break;
+      }
     }
 
     if (needsUpdate) {
@@ -265,7 +268,8 @@ function setupObserver(): void {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['data-syntax']
+    characterData: true,
+    attributeFilter: ['class']
   });
 }
 
