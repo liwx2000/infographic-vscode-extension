@@ -1,0 +1,21 @@
+// @ts-check
+const path = require('path');
+const shared = require('./shared.infographic.webpack.config');
+const webpack = require('webpack');
+
+module.exports = {
+    ...shared,
+    target: 'web',
+    entry: {
+        'index': path.join(__dirname, '..', 'src', 'markdownPreview', 'index.ts'),
+    },
+    output: {
+        path: path.join(__dirname, '..', 'dist-preview'),
+        filename: '[name].bundle.js'
+    },
+    plugins: [
+        new webpack.optimize.LimitChunkCountPlugin({
+            maxChunks: 1,
+        }),
+    ],
+};
