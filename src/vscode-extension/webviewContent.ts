@@ -40,17 +40,29 @@ export function getCustomEditorWebviewContent(
             height: 100vh;
         }
         .editor-pane {
-            width: 50%;
-            border-right: 1px solid var(--vscode-panel-border);
+            flex: 0 0 50%;
             display: flex;
             flex-direction: column;
+            min-width: 200px;
+        }
+        .splitter {
+            width: 4px;
+            background: var(--vscode-panel-border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            z-index: 1;
+            transition: background-color 0.1s ease;
+        }
+        .splitter:hover {
+            background: var(--vscode-focusBorder);
         }
         .preview-pane {
-            width: 50%;
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: auto;
+            min-width: 200px;
         }
         textarea {
             flex: 1;
@@ -105,6 +117,7 @@ export function getCustomEditorWebviewContent(
         <div class="editor-pane">
             <textarea id="editor">${escapeHtml(content)}</textarea>
         </div>
+        <div class="splitter" id="splitter" tabindex="0"></div>
         <div class="preview-pane">
             <div id="container" 
                  data-theme="${config.theme}"
@@ -122,9 +135,16 @@ export function getCustomEditorWebviewContent(
             const vscode = acquireVsCodeApi();
             const container = document.getElementById('container');
             const editor = document.getElementById('editor');
+            const splitter = document.getElementById('splitter');
+            const editorPane = document.querySelector('.editor-pane');
+            const previewPane = document.querySelector('.preview-pane');
+            const mainContainer = document.querySelector('.main-container');
             
             let debounceTimer = null;
             let isRendering = false;
+            let isDragging = false;
+            let startX = 0;
+            let startEditorWidth = 0;
             
             // Editor input handler with debouncing
             editor.addEventListener('input', () => {
@@ -176,6 +196,87 @@ export function getCustomEditorWebviewContent(
                     setTimeout(() => waitForRenderer(callback), 50);
                 }
             }
+            
+            // Initialize splitter state
+            function initializeSplitter() {
+                const state = vscode.getState();
+                if (state && typeof state.editorWidthPercent === 'number') {
+                    // Restore saved width ratio
+                    const percent = Math.max(0, Math.min(100, state.editorWidthPercent));
+                    applyEditorWidth(percent);
+                } else {
+                    // Use default 50/50 split
+                    applyEditorWidth(50);
+                }
+            }
+            
+            function applyEditorWidth(percent) {
+                const containerWidth = mainContainer.offsetWidth;
+                const splitterWidth = splitter.offsetWidth;
+                const availableWidth = containerWidth - splitterWidth;
+                const editorWidth = (availableWidth * percent) / 100;
+                
+                // Apply minimum width constraints
+                const minWidth = 200;
+                const maxEditorWidth = availableWidth - minWidth;
+                const constrainedWidth = Math.max(minWidth, Math.min(editorWidth, maxEditorWidth));
+                
+                editorPane.style.flex = '0 0 ' + constrainedWidth + 'px';
+            }
+            
+            function saveEditorWidth() {
+                const containerWidth = mainContainer.offsetWidth;
+                const splitterWidth = splitter.offsetWidth;
+                const editorWidth = editorPane.offsetWidth;
+                const availableWidth = containerWidth - splitterWidth;
+                const percent = (editorWidth / availableWidth) * 100;
+                
+                vscode.setState({ editorWidthPercent: percent });
+            }
+            
+            // Splitter drag handlers
+            splitter.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                startX = e.clientX;
+                startEditorWidth = editorPane.offsetWidth;
+                
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const delta = e.clientX - startX;
+                const newWidth = startEditorWidth + delta;
+                
+                const containerWidth = mainContainer.offsetWidth;
+                const splitterWidth = splitter.offsetWidth;
+                const availableWidth = containerWidth - splitterWidth;
+                const minWidth = 200;
+                
+                // Apply constraints
+                const constrainedWidth = Math.max(minWidth, Math.min(newWidth, availableWidth - minWidth));
+                
+                editorPane.style.flex = '0 0 ' + constrainedWidth + 'px';
+                
+                e.preventDefault();
+            });
+            
+            document.addEventListener('mouseup', function(e) {
+                if (!isDragging) return;
+                
+                isDragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                
+                saveEditorWidth();
+            });
+            
+            // Initialize splitter on load
+            initializeSplitter();
             
             // Initial render after script loads
             waitForRenderer(() => {
