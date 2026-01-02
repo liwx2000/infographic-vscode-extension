@@ -6,6 +6,7 @@ import { injectInfographicConfig } from './themeing';
 import { InfographicEditorProvider } from './customEditor';
 import { InfographicCodeLensProvider } from './codeLensProvider';
 import { InteractiveEditorManager } from './interactiveEditor';
+import { InfographicGutterDecorationProvider } from './gutterDecorationProvider';
 
 /**
  * Extension activation function
@@ -36,6 +37,10 @@ export function activate(ctx: vscode.ExtensionContext): {
             codeLensProvider
         )
     );
+
+    // Register gutter decoration provider for markdown files
+    const gutterDecorationProvider = new InfographicGutterDecorationProvider(ctx);
+    ctx.subscriptions.push(gutterDecorationProvider);
 
     // Create interactive editor manager
     const interactiveEditorManager = new InteractiveEditorManager(ctx);
