@@ -8,6 +8,7 @@ import { getCustomEditorWebviewContent } from './webviewContent';
  */
 export class InfographicEditorProvider implements vscode.CustomTextEditorProvider {
     public static readonly viewType = 'infographicMarkdown.editor';
+    private isUpdatingFromWebview = false;
     
     constructor(
         private readonly context: vscode.ExtensionContext
@@ -36,7 +37,17 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
         // Listen for document changes
         const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
             if (e.document.uri.toString() === document.uri.toString()) {
-                this.updateWebview(document, webviewPanel.webview);
+                // If the change came from webview, just update content without full reload
+                if (this.isUpdatingFromWebview) {
+                    this.isUpdatingFromWebview = false;
+                    // Don't update webview - the change originated from there
+                    return;
+                }
+                // External change - update content via message to preserve focus
+                webviewPanel.webview.postMessage({
+                    type: 'updateContent',
+                    content: document.getText()
+                });
             }
         });
 
@@ -59,6 +70,7 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
                         break;
                     case 'edit':
                         // Update document with edited content
+                        this.isUpdatingFromWebview = true;
                         const edit = new vscode.WorkspaceEdit();
                         const fullRange = new vscode.Range(
                             document.positionAt(0),

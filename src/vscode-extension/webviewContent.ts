@@ -76,6 +76,10 @@ export function getCustomEditorWebviewContent(
             resize: none;
             outline: none;
         }
+        textarea:focus {
+            border: none;
+            outline: none;
+        }
         #container {
             width: 100%;
             height: 100%;
@@ -288,8 +292,16 @@ export function getCustomEditorWebviewContent(
                 const message = event.data;
                 switch (message.type) {
                     case 'updateContent':
-                        editor.value = message.content;
-                        renderInfographic(message.content);
+                        // Only update if content is different and user is not actively editing
+                        if (editor.value !== message.content && document.activeElement !== editor) {
+                            const cursorPosition = editor.selectionStart;
+                            editor.value = message.content;
+                            renderInfographic(message.content);
+                            // Restore cursor position if editor was previously focused
+                            if (cursorPosition !== undefined) {
+                                editor.setSelectionRange(cursorPosition, cursorPosition);
+                            }
+                        }
                         break;
                     case 'updateConfig':
                         container.dataset.theme = message.config.theme;
