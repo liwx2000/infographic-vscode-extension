@@ -21,16 +21,3 @@ data
 ```infographic
 ```
 
-## Simple Timeline
-
-```infographic
-infographic timeline-vertical-simple
-data
-  items
-    - label 2020
-      desc Project Started
-    - label 2021
-      desc Beta Release
-    - label 2022
-      desc Version 1.0
-```

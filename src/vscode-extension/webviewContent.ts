@@ -1,0 +1,286 @@
+import * as vscode from 'vscode';
+
+/**
+ * Generate HTML content for custom editor webview
+ */
+export function getCustomEditorWebviewContent(
+    webview: vscode.Webview,
+    content: string,
+    config: { theme: string; width: string | number; height: string | number; padding: number | number[] },
+    context: vscode.ExtensionContext
+): string {
+    const nonce = getNonce();
+    const scriptUri = getEditorRendererScriptUri(webview, context);
+    
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; 
+        style-src ${webview.cspSource} 'unsafe-inline'; 
+        script-src 'nonce-${nonce}' ${webview.cspSource}; 
+        img-src ${webview.cspSource} https: data:;">
+    <title>Infographic Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: var(--vscode-editor-background);
+            color: var(--vscode-editor-foreground);
+            font-family: var(--vscode-font-family);
+            overflow: hidden;
+        }
+        .main-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+        .editor-pane {
+            width: 50%;
+            border-right: 1px solid var(--vscode-panel-border);
+            display: flex;
+            flex-direction: column;
+        }
+        .preview-pane {
+            width: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+        textarea {
+            flex: 1;
+            width: 100%;
+            background: var(--vscode-editor-background);
+            color: var(--vscode-editor-foreground);
+            border: none;
+            padding: 10px;
+            font-family: var(--vscode-editor-font-family);
+            font-size: var(--vscode-editor-font-size);
+            resize: none;
+            outline: none;
+        }
+        #container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .loading {
+            padding: 20px;
+            color: var(--vscode-descriptionForeground);
+            text-align: center;
+        }
+        .infographic-error {
+            padding: 20px;
+            background: var(--vscode-inputValidation-errorBackground);
+            border: 1px solid var(--vscode-inputValidation-errorBorder);
+            border-radius: 4px;
+            max-width: 600px;
+        }
+        .error-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .error-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .error-message {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="editor-pane">
+            <textarea id="editor">${escapeHtml(content)}</textarea>
+        </div>
+        <div class="preview-pane">
+            <div id="container" 
+                 data-theme="${config.theme}"
+                 data-width="${config.width}"
+                 data-height="${config.height}"
+                 data-padding="${JSON.stringify(config.padding).replace(/"/g, '&quot;')}">
+                <div class="loading">Loading renderer...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="${scriptUri}" nonce="${nonce}" id="renderer-script"></script>
+    <script nonce="${nonce}">
+        (function() {
+            const vscode = acquireVsCodeApi();
+            const container = document.getElementById('container');
+            const editor = document.getElementById('editor');
+            
+            let debounceTimer = null;
+            let isRendering = false;
+            
+            // Editor input handler with debouncing
+            editor.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    const content = editor.value;
+                    const cursorPosition = editor.selectionStart;
+                    vscode.postMessage({ type: 'edit', content });
+                    renderInfographic(content).then(() => {
+                        // Restore focus and cursor position after render
+                        editor.focus();
+                        editor.setSelectionRange(cursorPosition, cursorPosition);
+                    });
+                }, 500);
+            });
+            
+            // Add event listeners to the script element
+            const scriptEl = document.getElementById('renderer-script');
+            if (scriptEl) {
+                scriptEl.addEventListener('load', function() {
+                    console.log('Script loaded successfully');
+                });
+                scriptEl.addEventListener('error', function() {
+                    console.error('Script loading error');
+                });
+            }
+            
+            // Wait for the renderer script to load before initial render
+            let rendererCheckCount = 0;
+            const maxRendererChecks = 100;
+            
+            function waitForRenderer(callback) {
+                if (typeof window.InfographicRenderer?.render === 'function') {
+                    console.log('Renderer loaded successfully');
+                    callback();
+                } else {
+                    rendererCheckCount++;
+                    if (rendererCheckCount >= maxRendererChecks) {
+                        console.error('Renderer failed to load after timeout');
+                        container.innerHTML = \`
+                            <div class="infographic-error">
+                                <div class="error-icon">⚠️</div>
+                                <div class="error-title">Loading Error</div>
+                                <div class="error-message">Failed to load renderer script.</div>
+                            </div>
+                        \`;
+                        return;
+                    }
+                    setTimeout(() => waitForRenderer(callback), 50);
+                }
+            }
+            
+            // Initial render after script loads
+            waitForRenderer(() => {
+                renderInfographic('${escapeForScript(content)}');
+            });
+            
+            // Listen for messages from extension
+            window.addEventListener('message', event => {
+                const message = event.data;
+                switch (message.type) {
+                    case 'updateContent':
+                        editor.value = message.content;
+                        renderInfographic(message.content);
+                        break;
+                    case 'updateConfig':
+                        container.dataset.theme = message.config.theme;
+                        container.dataset.width = message.config.width;
+                        container.dataset.height = message.config.height;
+                        container.dataset.padding = JSON.stringify(message.config.padding);
+                        const currentSyntax = editor.value;
+                        if (currentSyntax) {
+                            renderInfographic(currentSyntax);
+                        }
+                        break;
+                }
+            });
+            
+            async function renderInfographic(syntax) {
+                try {
+                    container.innerHTML = '';
+                    
+                    if (!syntax || syntax.trim() === '') {
+                        container.innerHTML = '<div class="loading">Empty content</div>';
+                        return;
+                    }
+                    
+                    if (typeof window.InfographicRenderer?.render === 'function') {
+                        await window.InfographicRenderer.render(container, syntax);
+                    } else {
+                        throw new Error('Renderer not loaded');
+                    }
+                    
+                    vscode.postMessage({ type: 'ready' });
+                } catch (error) {
+                    console.error('Rendering error:', error);
+                    container.innerHTML = \`
+                        <div class="infographic-error">
+                            <div class="error-icon">⚠️</div>
+                            <div class="error-title">Rendering Error</div>
+                            <div class="error-message">\${error.message}</div>
+                        </div>
+                    \`;
+                    vscode.postMessage({ 
+                        type: 'error', 
+                        message: error.message 
+                    });
+                }
+            }
+        })();
+    </script>
+</body>
+</html>`;
+}
+
+/**
+ * Get the URI for the editor renderer script bundle
+ */
+function getEditorRendererScriptUri(webview: vscode.Webview, context: vscode.ExtensionContext): vscode.Uri {
+    const scriptUri = vscode.Uri.joinPath(context.extensionUri, 'dist', 'editorRenderer.bundle.js');
+    return webview.asWebviewUri(scriptUri);
+}
+
+/**
+ * Generate a nonce for CSP
+ */
+function getNonce(): string {
+    let text = '';
+    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 32; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
+
+/**
+ * Escape string for use in script tag
+ */
+function escapeForScript(str: string): string {
+    return str
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\t/g, '\\t');
+}
+
+/**
+ * Escape HTML entities
+ */
+function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}

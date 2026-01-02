@@ -93,18 +93,6 @@ function getCachedConfig(): InfographicConfig {
 }
 
 /**
- * Decode base64 encoded syntax
- */
-function decodeSyntax(encoded: string): string {
-    try {
-        return Buffer.from(encoded, 'base64').toString('utf-8');
-    } catch (e) {
-        console.error('Failed to decode syntax:', e);
-        return '';
-    }
-}
-
-/**
  * Create error display in container
  */
 function displayError(container: HTMLElement, message: string, error?: Error): void {

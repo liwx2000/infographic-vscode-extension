@@ -1,0 +1,59 @@
+diff --git a/node_modules/@antv/infographic/lib/renderer/fonts/index.js b/node_modules/@antv/infographic/lib/renderer/fonts/index.js
+index 3571b12..6bf96c0 100644
+--- a/node_modules/@antv/infographic/lib/renderer/fonts/index.js
++++ b/node_modules/@antv/infographic/lib/renderer/fonts/index.js
+@@ -14,4 +14,4 @@ Object.defineProperty(exports, "registerFont", { enumerable: true, get: function
+ Object.defineProperty(exports, "setDefaultFont", { enumerable: true, get: function () { return registry_1.setDefaultFont; } });
+ const built_in_1 = require("./built-in");
+ const registry_2 = require("./registry");
+-built_in_1.BUILT_IN_FONTS.forEach(registry_2.registerFont);
++// built_in_1.BUILT_IN_FONTS.forEach(registry_2.registerFont);
+diff --git a/node_modules/@antv/infographic/lib/renderer/fonts/registry.js b/node_modules/@antv/infographic/lib/renderer/fonts/registry.js
+index 7bc3b0e..848eeb7 100644
+--- a/node_modules/@antv/infographic/lib/renderer/fonts/registry.js
++++ b/node_modules/@antv/infographic/lib/renderer/fonts/registry.js
+@@ -6,11 +6,11 @@ exports.getFonts = getFonts;
+ exports.setDefaultFont = setDefaultFont;
+ exports.registerFont = registerFont;
+ exports.unregisterFont = unregisterFont;
+-const utils_1 = require("../../utils");
++const encodeFontFamily = (s) => s; const decodeFontFamily = (s) => s;
+ const FONT_REGISTRY = new Map();
+ exports.DEFAULT_FONT = 'Alibaba PuHuiTi';
+ function getFont(font) {
+-    const fontObj = FONT_REGISTRY.get((0, utils_1.decodeFontFamily)(font));
++    const fontObj = FONT_REGISTRY.get(decodeFontFamily(font));
+     if (!fontObj)
+         return null;
+     return fontObj;
+@@ -19,7 +19,7 @@ function getFonts() {
+     return Array.from(FONT_REGISTRY.values());
+ }
+ function setDefaultFont(font) {
+-    exports.DEFAULT_FONT = (0, utils_1.encodeFontFamily)(font);
++    exports.DEFAULT_FONT = encodeFontFamily(font);
+ }
+ /**
+  * 注册自定义字体
+@@ -41,7 +41,7 @@ function setDefaultFont(font) {
+ function registerFont(font) {
+     const f = { ...font };
+     FONT_REGISTRY.set(f.fontFamily, f);
+-    f.fontFamily = (0, utils_1.encodeFontFamily)(f.fontFamily);
++    f.fontFamily = encodeFontFamily(f.fontFamily);
+     return f;
+ }
+ function unregisterFont(font) {
+diff --git a/node_modules/@antv/infographic/lib/utils/measure-text.js b/node_modules/@antv/infographic/lib/utils/measure-text.js
+index 29b3a22..bf6d0e7 100644
+--- a/node_modules/@antv/infographic/lib/utils/measure-text.js
++++ b/node_modules/@antv/infographic/lib/utils/measure-text.js
+@@ -7,7 +7,7 @@ exports.measureText = measureText;
+ const measury_1 = require("measury");
+ const AlibabaPuHuiTi_Regular_1 = __importDefault(require("measury/fonts/AlibabaPuHuiTi-Regular"));
+ const renderer_1 = require("../renderer");
+-(0, measury_1.registerFont)(AlibabaPuHuiTi_Regular_1.default);
++// (0, measury_1.registerFont)(AlibabaPuHuiTi_Regular_1.default);
+ function measureText(text = '', attrs) {
+     if (attrs.width && attrs.height) {
+         return { width: attrs.width, height: attrs.height };

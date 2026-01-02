@@ -41,6 +41,10 @@ const config = {
                     resource.request = path.resolve(__dirname, '..', 'src', 'measury-stub.js');
                 }
             }
+        ),
+        new (require('webpack')).NormalModuleReplacementPlugin(
+            /renderer[\\\/]fonts/,
+            path.resolve(__dirname, '..', 'src', 'fonts-stub.js')
         )
     ],
     devtool: 'nosources-source-map',

@@ -10,6 +10,8 @@ Currently supports AntV Infographic version 0.1.0.
 
 ## Usage
 
+### In Markdown Preview
+
 Create infographic diagrams in markdown using `infographic` fenced code blocks:
 
 ~~~markdown
@@ -51,6 +53,27 @@ data
 ~~~
 
 For complete syntax documentation, see the [AntV Infographic Syntax Guide](https://infographic.antv.vision/learn/infographic-syntax).
+
+### Standalone .infographic Files
+
+You can now create standalone `.infographic` files! These files will open in a custom editor with a live preview panel:
+
+1. Create a new file with `.infographic` extension
+2. Write your infographic syntax directly (without code fences)
+3. The editor will show a split view with text on the left and live preview on the right
+4. Changes update automatically as you type
+
+### Interactive Code Block Editor
+
+Edit infographic code blocks in a dedicated editor:
+
+1. Open a markdown file containing `infographic` code blocks
+2. Click the **Edit** icon (📝) in the gutter next to any infographic code block
+3. An interactive editor opens with:
+   - Text editor on the left for editing syntax
+   - Live preview on the right showing the rendered infographic
+   - Apply/Revert buttons to save or discard changes
+4. Click **Apply** to save changes back to your markdown file
 
 ## Configuration
 
