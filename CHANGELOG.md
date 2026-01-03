@@ -5,6 +5,58 @@ All notable changes to the "AntV Infographic Preview" extension will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-03
+
+### Added
+- **Custom Editor for Standalone .infographic Files**
+  - Support for creating and editing standalone `.infographic` files
+  - Split-view editor with text editor on the left and live preview on the right
+  - Automatic live preview updates as users type
+  - Files with `.infographic` extension automatically open in the custom editor
+- **Interactive Code Block Editor**
+  - Code lens provider that adds "Edit Infographic" button to markdown infographic code blocks
+  - Clicking the edit button opens a dedicated editor for the code block
+  - Split-view interface with text editor and live preview
+  - Apply and Revert buttons for saving or discarding changes
+  - Changes sync back to the original markdown file
+- **Visual Gutter Decorations**
+  - Logo icon displayed in the editor gutter next to infographic code block identifiers
+  - Helps visually identify infographic blocks in markdown files
+  - Uses the extension's `logo.svg` for consistent branding
+- **Language Support**
+  - New "infographic" language identifier registration
+  - Syntax support for `.infographic` file extension
+  - Enables language-specific features for infographic files
+
+### Technical Details
+- **New Extension Components**
+  - `InfographicEditorProvider`: Custom text editor provider implementing `vscode.CustomTextEditorProvider`
+  - `InfographicCodeLensProvider`: Provides edit buttons via VS Code's code lens API
+  - `InfographicGutterDecorationProvider`: Manages gutter icon decorations for infographic blocks
+  - `TempFileCache`: Persistent cache for temporary file URI tracking
+  - `SaveHandler`: Handles save operations and synchronization logic
+  - `SyncService`: Coordinates bi-directional sync between buffers and markdown sources
+  - `MessageHandler`: Centralized message type definitions and handling logic
+- **Extension Contributions**
+  - Registered `customEditors` contribution for "infographicMarkdown.editor" view type
+  - Registered "infographicMarkdown.editBlock" command
+  - Added language definition for "infographic" language ID
+  - File extension association for `.infographic` files
+- **Webview Integration**
+  - Editor template system for custom editor HTML generation
+  - Real-time configuration synchronization with VS Code settings
+  - Theme-aware rendering that respects VS Code color theme changes
+
+### Improved
+- **User Experience**
+  - More intuitive workflow for editing infographic content
+  - Visual indicators for infographic code blocks in markdown
+  - Seamless integration between markdown editing and visual preview
+- **Development Workflow**
+  - Ability to work with infographic content as standalone files
+  - Direct editing without switching between preview and source
+  - Faster iteration with live preview feedback
+
 ## [1.1.0] - 2024-12-27
 
 ### Added
