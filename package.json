@@ -2,9 +2,9 @@
   "name": "vscode-infographic-markdown",
   "displayName": "Infographic Markdown Preview",
   "description": "Render AntV Infographic visualizations in Markdown preview",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "liwx2000",
-  "icon": "infographic.png",
+  "icon": "doc/logo.png",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -20,23 +20,61 @@
     "preview"
   ],
   "activationEvents": [
-    "onLanguage:markdown"
+    "onLanguage:markdown",
+    "onLanguage:infographic",
+    "onCustomEditor:infographicMarkdown.editor"
   ],
-  "main": "./dist/extension.js",
+  "main": "./dist/index.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "infographic",
+        "aliases": [
+          "Infographic",
+          "infographic"
+        ],
+        "extensions": [
+          ".infographic"
+        ]
+      }
+    ],
     "markdown.markdownItPlugins": true,
     "markdown.previewScripts": [
-      "./dist/preview.js"
+      "./dist-preview/index.bundle.js"
     ],
-    "markdown.previewStyles": [
-      "./media/infographic.css"
+    "customEditors": [
+      {
+        "viewType": "infographicMarkdown.editor",
+        "displayName": "Infographic Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.infographic"
+          },
+          {
+            "filenamePattern": "*",
+            "languageId": "infographic"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "infographicMarkdown.editBlock",
+        "title": "Edit Infographic Block",
+        "icon": "$(edit)"
+      }
     ],
     "configuration": {
       "title": "Infographic Markdown",
       "properties": {
         "infographicMarkdown.theme": {
           "type": "string",
-          "enum": ["auto", "light", "dark"],
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
           "default": "auto",
           "description": "Theme for rendered infographics. 'auto' follows VSCode's color theme, 'light' forces light theme, 'dark' forces dark theme.",
           "enumDescriptions": [
@@ -80,16 +118,22 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
-    "build": "webpack --mode production",
-    "watch": "webpack --mode development --watch",
-    "package": "vsce package"
+    "compile-ext": "webpack --config build/webpack.config.js",
+    "watch-ext": "webpack --watch --config build/webpack.config.js",
+    "build-preview": "webpack --mode=production --config build/markdownPreview.webpack.config.js",
+    "build-editor": "webpack --mode=production --config build/editorRenderer.webpack.config.js",
+    "vscode:prepublish": "npm run compile-ext && npm run build-preview && npm run build-editor",
+    "build": "npm run vscode:prepublish",
+    "watch": "npm run watch-ext",
+    "package": "vsce package",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "@types/markdown-it": "^13.0.0",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.75.0",
     "@vscode/vsce": "^2.22.0",
+    "patch-package": "^8.0.1",
     "ts-loader": "^9.5.0",
     "typescript": "^5.3.0",
     "webpack": "^5.89.0",

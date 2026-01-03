@@ -1,0 +1,17 @@
+infographic list-row-horizontal-icon-arrow
+data
+  title Customer Growth Engine
+  desc Multi-channel reach and repurchase improvement
+  items
+    - label Lead Acquisition
+      value 18.6
+      desc Channel placement and content acquisition
+      icon company-021_v1_lineal
+    - label Conversion Efficiency
+      value 12.4
+      desc Lead scoring and automated follow-up
+      icon antenna-bars-5_v1_lineal
+    - label User Retention
+      value 8.9
+      desc User lifecycle management
+      icon activities-037_v1_lineal

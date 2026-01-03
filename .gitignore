@@ -6,3 +6,5 @@ out/
 .DS_Store
 *.log
 .qoder/
+dist-preview/
+dist-editor/
