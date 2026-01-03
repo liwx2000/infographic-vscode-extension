@@ -5,8 +5,10 @@ import { configSection } from './config';
 import { injectInfographicConfig } from './themeing';
 import { InfographicEditorProvider } from './customEditor';
 import { InfographicCodeLensProvider } from './codeLensProvider';
-import { InteractiveEditorManager } from './interactiveEditor';
 import { InfographicGutterDecorationProvider } from './gutterDecorationProvider';
+import { TempFileCache } from './cache/tempFileCache';
+import { SyncService } from './services/syncService';
+import { SaveHandler } from './handlers/saveHandler';
 
 /**
  * Extension activation function
@@ -42,34 +44,64 @@ export function activate(ctx: vscode.ExtensionContext): {
     const gutterDecorationProvider = new InfographicGutterDecorationProvider(ctx);
     ctx.subscriptions.push(gutterDecorationProvider);
 
-    // Create interactive editor manager
-    const interactiveEditorManager = new InteractiveEditorManager(ctx);
-    
+    // Register save handler for temporary buffers
+    const saveHandler = new SaveHandler(ctx);
+    ctx.subscriptions.push(saveHandler.register());
+
     // Register cleanup on deactivation
     ctx.subscriptions.push({
         dispose: () => {
-            interactiveEditorManager.dispose();
+            SyncService.disposeAll();
+            TempFileCache.clearTempUris(ctx);
         }
     });
 
-    // Register command to open interactive editor
+    // Register command to open editor for code block
     ctx.subscriptions.push(
         vscode.commands.registerCommand(
             'infographicMarkdown.editBlock',
-            async (
-                documentUri: vscode.Uri,
-                range: vscode.Range,
-                content: string,
-                fileName: string,
-                line: number
-            ) => {
-                await interactiveEditorManager.openEditor(
-                    documentUri,
-                    range,
-                    content,
-                    fileName,
-                    line
-                );
+            async (documentUri: vscode.Uri, range: vscode.Range) => {
+                try {
+                    // Extract content from the range
+                    const document = await vscode.workspace.openTextDocument(documentUri);
+                    const content = document.getText(range);
+
+                    if (!content || content.trim() === '') {
+                        vscode.window.showWarningMessage('No content to edit in the selected range');
+                        return;
+                    }
+
+                    // Create untitled document with infographic content (without displaying it)
+                    const untitledDocument = await vscode.workspace.openTextDocument({
+                        content: content,
+                        language: 'infographic'
+                    });
+
+                    // Register in TempFileCache immediately
+                    TempFileCache.addTempUri(ctx, untitledDocument.uri.toString());
+
+                    // Open with custom editor (webview) using vscode.openWith command
+                    // This ensures the custom editor is used instead of the native text editor
+                    await vscode.commands.executeCommand(
+                        'vscode.openWith',
+                        untitledDocument.uri,
+                        InfographicEditorProvider.viewType,
+                        vscode.ViewColumn.Active
+                    );
+
+                    // Set up synchronization
+                    SyncService.setupSync(
+                        untitledDocument.uri,
+                        documentUri,
+                        range,
+                        content
+                    );
+                } catch (error) {
+                    console.error('Error opening infographic editor:', error);
+                    vscode.window.showErrorMessage(
+                        `Failed to open infographic editor: ${error instanceof Error ? error.message : 'Unknown error'}`
+                    );
+                }
             }
         )
     );

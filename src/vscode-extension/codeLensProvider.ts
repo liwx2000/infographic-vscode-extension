@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 /**
  * Code lens provider for infographic code blocks in markdown files
@@ -51,20 +50,17 @@ export class InfographicCodeLensProvider implements vscode.CodeLensProvider {
                         new vscode.Position(startLine, line.length)
                     );
 
+                    // Content range (excluding fences)
+                    const contentRange = new vscode.Range(
+                        new vscode.Position(startLine + 1, 0),
+                        new vscode.Position(endLine, 0)
+                    );
+
                     const codeLens = new vscode.CodeLens(range, {
                         title: '$(edit) Edit Infographic',
                         tooltip: 'Edit Infographic Block',
                         command: 'infographicMarkdown.editBlock',
-                        arguments: [
-                            document.uri,
-                            new vscode.Range(
-                                new vscode.Position(startLine + 1, 0),
-                                new vscode.Position(endLine, 0)
-                            ),
-                            blockContent,
-                            path.basename(document.fileName),
-                            startLine + 1
-                        ]
+                        arguments: [document.uri, contentRange]
                     });
 
                     codeLenses.push(codeLens);

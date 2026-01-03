@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { configSection } from './config';
-import { getCustomEditorWebviewContent } from './webviewContent';
+import { getEditorWebviewHTML } from './templates/editorTemplate';
+import { MessageTypes, handleEditMessage, handleErrorMessage, handleExportMessage } from './handlers/messageHandler';
 
 /**
  * Custom text editor provider for .infographic files
@@ -62,22 +63,22 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
         webviewPanel.webview.onDidReceiveMessage(
             async message => {
                 switch (message.type) {
-                    case 'ready':
+                    case MessageTypes.READY:
                         // Webview is ready, can send initial content if needed
                         break;
-                    case 'error':
-                        vscode.window.showErrorMessage(`Infographic rendering error: ${message.message}`);
+                    case MessageTypes.ERROR:
+                        handleErrorMessage(message.message, vscode.languages.createDiagnosticCollection('infographic'));
                         break;
-                    case 'edit':
+                    case MessageTypes.EDIT:
                         // Update document with edited content
+                        await handleEditMessage(document, message.content, { value: this.isUpdatingFromWebview });
                         this.isUpdatingFromWebview = true;
-                        const edit = new vscode.WorkspaceEdit();
-                        const fullRange = new vscode.Range(
-                            document.positionAt(0),
-                            document.positionAt(document.getText().length)
-                        );
-                        edit.replace(document.uri, fullRange, message.content);
-                        await vscode.workspace.applyEdit(edit);
+                        break;
+                    case MessageTypes.EXPORT_SVG:
+                        await handleExportMessage(MessageTypes.EXPORT_SVG, message.svgData, document);
+                        break;
+                    case MessageTypes.EXPORT_PNG:
+                        await handleExportMessage(MessageTypes.EXPORT_PNG, message.pngData, document);
                         break;
                 }
             }
@@ -96,7 +97,7 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
     private updateWebview(document: vscode.TextDocument, webview: vscode.Webview): void {
         const config = this.getConfiguration();
         const content = document.getText();
-        webview.html = getCustomEditorWebviewContent(webview, content, config, this.context);
+        webview.html = getEditorWebviewHTML(webview, content, config, this.context);
     }
 
     /**
