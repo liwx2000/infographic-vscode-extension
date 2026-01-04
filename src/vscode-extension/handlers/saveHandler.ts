@@ -16,7 +16,7 @@ export class SaveHandler {
     register(): vscode.Disposable {
         const disposables: vscode.Disposable[] = [];
 
-        // Intercept save for temp files (but NOT untitled documents)
+        // Intercept save for temp files
         const saveHandler = vscode.workspace.onWillSaveTextDocument(async (event) => {
             const document = event.document;
             const uri = document.uri.toString();
@@ -24,12 +24,6 @@ export class SaveHandler {
             // Check if this is a temporary buffer
             if (!TempFileCache.hasTempUri(this.context, uri)) {
                 return; // Let VSCode handle normal saves
-            }
-
-            // For untitled documents, let VSCode handle the native save-as dialog
-            // We'll cleanup in onDidCloseTextDocument or via custom save-as command
-            if (document.uri.scheme === 'untitled') {
-                return; // Let VSCode handle untitled document save-as
             }
 
             // Get tracking information to determine if this has a markdown source

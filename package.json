@@ -2,9 +2,10 @@
   "name": "vscode-infographic-markdown",
   "displayName": "Infographic Markdown Preview",
   "description": "Render AntV Infographic visualizations in Markdown preview",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "liwx2000",
   "icon": "doc/logo.png",
+  "repository": "github:liwx2000/infographic-vscode-extension",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -51,8 +52,7 @@
             "filenamePattern": "*.infographic"
           },
           {
-            "filenamePattern": "*",
-            "languageId": "infographic"
+            "language": "infographic"
           }
         ],
         "priority": "default"

@@ -9,6 +9,7 @@ import { InfographicGutterDecorationProvider } from './gutterDecorationProvider'
 import { TempFileCache } from './cache/tempFileCache';
 import { SyncService } from './services/syncService';
 import { SaveHandler } from './handlers/saveHandler';
+import { InfographicPreviewPanel } from './panels/previewPanel';
 
 /**
  * Extension activation function
@@ -71,7 +72,7 @@ export function activate(ctx: vscode.ExtensionContext): {
                         return;
                     }
 
-                    // Create untitled document with infographic content (without displaying it)
+                    // Create untitled document with infographic content and language association
                     const untitledDocument = await vscode.workspace.openTextDocument({
                         content: content,
                         language: 'infographic'
@@ -80,14 +81,18 @@ export function activate(ctx: vscode.ExtensionContext): {
                     // Register in TempFileCache immediately
                     TempFileCache.addTempUri(ctx, untitledDocument.uri.toString());
 
-                    // Open with custom editor (webview) using vscode.openWith command
-                    // This ensures the custom editor is used instead of the native text editor
-                    await vscode.commands.executeCommand(
-                        'vscode.openWith',
-                        untitledDocument.uri,
-                        InfographicEditorProvider.viewType,
-                        vscode.ViewColumn.Active
+                    // Open document in standard text editor
+                    await vscode.window.showTextDocument(
+                        untitledDocument,
+                        {
+                            viewColumn: vscode.ViewColumn.Active,
+                            preserveFocus: false,
+                            preview: false
+                        }
                     );
+
+                    // Create or show preview panel beside the editor
+                    InfographicPreviewPanel.createOrShow(untitledDocument, ctx);
 
                     // Set up synchronization
                     SyncService.setupSync(
