@@ -159,7 +159,6 @@ export function getEditorWebviewHTML(
             const mainContainer = document.querySelector('.main-container');
             
             let debounceTimer = null;
-            let isRendering = false;
             let isDragging = false;
             let startX = 0;
             let startEditorWidth = 0;

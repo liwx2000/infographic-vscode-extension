@@ -67,7 +67,7 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
                         // Webview is ready, can send initial content if needed
                         break;
                     case MessageTypes.ERROR:
-                        handleErrorMessage(message.message, vscode.languages.createDiagnosticCollection('infographic'));
+                        handleErrorMessage(message.message);
                         break;
                     case MessageTypes.EDIT:
                         // Update document with edited content

@@ -12,7 +12,6 @@ export class InfographicPreviewPanel {
     private document: vscode.TextDocument;
     private readonly disposables: vscode.Disposable[] = [];
     private isFileChange = false;
-    private lastContent: string = '';
     private readonly context: vscode.ExtensionContext;
 
     private constructor(
@@ -69,7 +68,6 @@ export class InfographicPreviewPanel {
      */
     private update(): void {
         const content = this.document.getText() || ' ';
-        this.lastContent = content;
 
         // Get configuration
         const config = vscode.workspace.getConfiguration('infographicMarkdown');

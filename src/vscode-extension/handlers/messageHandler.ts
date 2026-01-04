@@ -40,10 +40,7 @@ export async function handleEditMessage(
 /**
  * Handle error message from webview
  */
-export function handleErrorMessage(
-    message: string,
-    diagnosticCollection: vscode.DiagnosticCollection
-): void {
+export function handleErrorMessage(message: string): void {
     vscode.window.showErrorMessage(`Infographic rendering error: ${message}`);
 }
 
