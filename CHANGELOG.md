@@ -5,6 +5,33 @@ All notable changes to the "AntV Infographic Preview" extension will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-01-04
+
+### Changed
+- **Improved Infographic Document Workflow**
+  - New `.infographic` files now open in standard text editor with side-by-side preview panel
+  - Changed from full custom editor to split editor/preview layout for better editing experience
+  - Preview panel automatically syncs with editor content changes
+  - Fixed language association configuration key in package.json (`language` instead of `languageId`)
+
+### Refactored
+- **Webview Architecture Simplification**
+  - Removed unused `webviewContent.ts` file (399 lines removed)
+  - Simplified error handling by removing diagnostic collection parameters
+  - Cleaned up save handler logic and removed unnecessary conditions
+  - Streamlined editor template by removing unused variables and state
+  - Improved code maintainability by consolidating error display logic
+
+### Added
+- **New Preview Panel System**
+  - `InfographicPreviewPanel`: Singleton panel for displaying live preview beside editor
+  - `PreviewTemplate`: Dedicated HTML template for preview rendering
+  - Automatic document registration in TempFileCache for sync management
+  - Bi-directional synchronization between text editor and preview panel
+
+### Fixed
+- Documentation: Updated image URLs in README to point to master branch
+
 ## [1.2.0] - 2026-01-03
 
 ### Added
