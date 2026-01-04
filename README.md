@@ -4,7 +4,7 @@
 
 Adds [AntV Infographic](https://infographic.antv.vision) diagram and visualization support to VS Code's builtin Markdown preview.
 
-![A AntV Infographic in VS Code's built-in markdown preview](https://raw.githubusercontent.com/liwx2000/infographic-vscode-extension/refs/heads/v1.2.0/doc/example.png)
+![A AntV Infographic in VS Code's built-in markdown preview](https://raw.githubusercontent.com/liwx2000/infographic-vscode-extension/refs/heads/master/doc/example.png)
 
 Currently supports AntV Infographic version 0.1.0.
 
