@@ -1,33 +1,20 @@
-import { Infographic, ThemeConfig } from '@antv/infographic';
+import { Infographic } from '@antv/infographic';
 
 /**
  * Configuration interface for infographic rendering
  */
 export interface InfographicConfig {
-    theme: string;
     width: string | number;
     height: string | number;
     padding: number | number[];
 }
 
-/**
- * Theme configuration constants
- */
-const DARK_THEME: ThemeConfig = {
-    colorBg: '#1F1F1F',
-    colorPrimary: '#61DDAA'
-};
 
-const LIGHT_THEME: ThemeConfig = {
-    colorBg: '#FFFFFF',
-    colorPrimary: '#FF356A'
-};
 
 /**
  * Default configuration
  */
 const DEFAULT_CONFIG: InfographicConfig = {
-    theme: 'light',
     width: '100%',
     height: '100%',
     padding: 0
@@ -48,13 +35,11 @@ export function loadInfographicConfig(): InfographicConfig {
     const configElement = document.getElementById('infographicMarkdown');
     if (configElement) {
         try {
-            const theme = configElement.getAttribute('data-theme');
             const width = configElement.getAttribute('data-width');
             const height = configElement.getAttribute('data-height');
             const paddingStr = configElement.getAttribute('data-padding');
 
             const currentConfig: InfographicConfig = {
-                theme: theme || DEFAULT_CONFIG.theme,
                 width: width || DEFAULT_CONFIG.width,
                 height: height || DEFAULT_CONFIG.height,
                 padding: paddingStr ? JSON.parse(paddingStr) : DEFAULT_CONFIG.padding
@@ -73,12 +58,7 @@ export function loadInfographicConfig(): InfographicConfig {
     return defaultConfig;
 }
 
-/**
- * Get theme configuration object for given theme name
- */
-export function getThemeConfig(theme: string): ThemeConfig {
-    return theme === 'dark' ? DARK_THEME : LIGHT_THEME;
-}
+
 
 /**
  * Get cached configuration. Returns null if config hasn't been loaded yet.
@@ -144,7 +124,6 @@ function renderInfographicElement(
             try {
                 // Get cached configuration (loaded during initialization)
                 const config = getCachedConfig();
-                const themeConfig = getThemeConfig(config.theme);
 
                 // Clear container
                 infographicContainer.innerHTML = '';
@@ -155,8 +134,7 @@ function renderInfographicElement(
                     container: infographicContainer,
                     width: config.width,
                     height: config.height,
-                    padding: config.padding,
-                    themeConfig: themeConfig
+                    padding: config.padding
                 });
 
                 // Render the infographic

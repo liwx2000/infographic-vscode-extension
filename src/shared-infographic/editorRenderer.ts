@@ -1,5 +1,5 @@
-import { Infographic, ThemeConfig } from '@antv/infographic';
-import { InfographicConfig, getThemeConfig } from './index';
+import { Infographic } from '@antv/infographic';
+import { InfographicConfig } from './index';
 
 /**
  * Render infographic syntax directly in a container with provided configuration.
@@ -20,16 +20,12 @@ export async function renderInfographicWithConfig(
             return;
         }
 
-        // Get theme configuration
-        const themeConfig = getThemeConfig(config.theme);
-
         // Create new infographic instance with configuration
         const infographic = new Infographic({
             container: container,
             width: config.width,
             height: config.height,
-            padding: config.padding,
-            themeConfig: themeConfig
+            padding: config.padding
         });
 
         // Render the infographic
@@ -60,7 +56,6 @@ function displayEditorError(container: HTMLElement, message: string, error?: Err
  * Parse configuration from data attributes (for webview contexts)
  */
 export function parseConfigFromAttributes(element: HTMLElement): InfographicConfig {
-    const theme = element.dataset.theme || 'light';
     const width = element.dataset.width || '100%';
     const height = element.dataset.height || '100%';
     const paddingStr = element.dataset.padding;
@@ -74,5 +69,5 @@ export function parseConfigFromAttributes(element: HTMLElement): InfographicConf
         }
     }
 
-    return { theme, width, height, padding };
+    return { width, height, padding };
 }

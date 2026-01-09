@@ -7,8 +7,7 @@ import * as vscode from 'vscode';
 export function getPreviewHTML(
     webview: vscode.Webview,
     context: vscode.ExtensionContext,
-    content: string,
-    theme: string
+    content: string
 ): string {
     const nonce = getNonce();
     const scriptUri = getRendererScriptUri(webview, context);
@@ -79,7 +78,7 @@ export function getPreviewHTML(
     </style>
 </head>
 <body>
-    <div id="container" data-theme="${theme}">
+    <div id="container">
         <div class="loading">Loading renderer...</div>
     </div>
     
@@ -91,7 +90,6 @@ export function getPreviewHTML(
             
             let currentContent = '';
             let currentConfig = {
-                theme: '${theme}',
                 width: 800,
                 height: 600,
                 padding: 20
@@ -129,12 +127,10 @@ export function getPreviewHTML(
                     case 'update':
                         currentContent = message.content || '';
                         currentConfig = {
-                            theme: message.currentTheme || 'light',
                             width: message.width || 800,
                             height: message.height || 600,
                             padding: message.padding || 20
                         };
-                        container.dataset.theme = currentConfig.theme;
                         renderInfographic(currentContent, currentConfig);
                         break;
                 }
@@ -152,7 +148,6 @@ export function getPreviewHTML(
                     
                     if (typeof window.InfographicRenderer?.render === 'function') {
                         // Apply configuration to container
-                        container.dataset.theme = config.theme;
                         container.dataset.width = config.width;
                         container.dataset.height = config.height;
                         container.dataset.padding = JSON.stringify(config.padding);

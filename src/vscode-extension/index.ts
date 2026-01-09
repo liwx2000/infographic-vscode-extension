@@ -114,8 +114,8 @@ export function activate(ctx: vscode.ExtensionContext): {
     // Listen for configuration changes and trigger markdown preview refresh
     ctx.subscriptions.push(
         vscode.workspace.onDidChangeConfiguration((e) => {
-            // Check if infographic-related settings changed or theme changed
-            if (e.affectsConfiguration(configSection) || e.affectsConfiguration('workbench.colorTheme')) {
+            // Check if infographic-related settings changed
+            if (e.affectsConfiguration(configSection)) {
                 // Force refresh all markdown previews by sending a command
                 vscode.commands.executeCommand('markdown.preview.refresh');
             }

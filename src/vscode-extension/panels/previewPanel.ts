@@ -71,27 +71,16 @@ export class InfographicPreviewPanel {
 
         // Get configuration
         const config = vscode.workspace.getConfiguration('infographicMarkdown');
-        const themeConfig = config.get<string>('theme', 'auto');
         const width = config.get<number>('width', 800);
         const height = config.get<number>('height', 600);
         const padding = config.get<number>('padding', 20);
-
-        // Resolve theme based on configuration
-        const isDarkTheme = vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark;
-        let currentTheme: string;
-        if (themeConfig === 'auto') {
-            currentTheme = isDarkTheme ? 'dark' : 'light';
-        } else {
-            currentTheme = themeConfig;
-        }
 
         // Update or set webview HTML
         if (!this.panel.webview.html) {
             this.panel.webview.html = getPreviewHTML(
                 this.panel.webview,
                 this.context,
-                content,
-                currentTheme
+                content
             );
         }
 
@@ -99,7 +88,6 @@ export class InfographicPreviewPanel {
         this.panel.webview.postMessage({
             type: 'update',
             content: content,
-            currentTheme: currentTheme,
             isFileChange: this.isFileChange,
             width: width,
             height: height,
@@ -135,13 +123,6 @@ export class InfographicPreviewPanel {
                         debouncedUpdate();
                     }
                 }
-            })
-        );
-
-        // Listen for theme changes
-        this.disposables.push(
-            vscode.window.onDidChangeActiveColorTheme(() => {
-                this.update();
             })
         );
 

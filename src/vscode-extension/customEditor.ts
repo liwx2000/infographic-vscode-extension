@@ -54,7 +54,7 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
 
         // Listen for configuration changes
         const changeConfigSubscription = vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration(configSection) || e.affectsConfiguration('workbench.colorTheme')) {
+            if (e.affectsConfiguration(configSection)) {
                 this.updateWebviewConfig(webviewPanel.webview);
             }
         });
@@ -115,33 +115,17 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
      * Get current configuration from settings
      */
     private getConfiguration(): {
-        theme: string;
         width: string | number;
         height: string | number;
         padding: number | number[];
     } {
         const config = vscode.workspace.getConfiguration(configSection);
         
-        const themeSetting = config.get<'auto' | 'light' | 'dark'>('theme', 'auto');
-        const theme = this.resolveTheme(themeSetting);
         const width = config.get<string | number>('width', '100%');
         const height = config.get<string | number>('height', '100%');
         const padding = config.get<number | number[]>('padding', 0);
 
-        return { theme, width, height, padding };
+        return { width, height, padding };
     }
 
-    /**
-     * Resolve theme setting to actual theme value
-     */
-    private resolveTheme(themeSetting: 'auto' | 'light' | 'dark'): 'light' | 'dark' {
-        if (themeSetting === 'auto') {
-            const currentTheme = vscode.window.activeColorTheme;
-            return currentTheme.kind === vscode.ColorThemeKind.Light ||
-                   currentTheme.kind === vscode.ColorThemeKind.HighContrastLight
-                ? 'light'
-                : 'dark';
-        }
-        return themeSetting;
-    }
 }
