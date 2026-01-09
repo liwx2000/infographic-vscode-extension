@@ -39,7 +39,7 @@ export function extendMarkdownItWithInfographic(md: MarkdownIt): MarkdownIt {
             
             // Return container div with data attribute
             // Config is injected at the document level by the extension, not per block
-            return `<pre style="all:unset;"><div class="${infographicLanguageId}" data-syntax="${preProcess(code)}"></div></pre>`;
+            return `<pre style="all:unset;"><div class="${infographicLanguageId}" data-syntax="${preProcess(code)}" style="background-color:#FFFFFF"></div></pre>`;
         }
         
         // For all other code blocks, use the default renderer

@@ -125,7 +125,7 @@
     "webpack-cli": "^5.1.0"
   },
   "dependencies": {
-    "@antv/infographic": "^0.1.0",
+    "@antv/infographic": "^0.2.7",
     "eventemitter3": "^5.0.1",
     "markdown-it": "^13.0.0"
   }
