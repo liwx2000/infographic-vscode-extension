@@ -11,6 +11,7 @@ export interface SyncTracking {
     blockKey: string;
     lastSyncContent: string;
     disposables: vscode.Disposable[];
+    isSyncing: boolean;  // Flag to prevent circular sync
 }
 
 /**
@@ -47,7 +48,7 @@ export class SyncService {
         const bufferChangeSubscription = vscode.workspace.onDidChangeTextDocument(async (e) => {
             if (e.document.uri.toString() === bufferUri.toString()) {
                 const tracking = this.trackingMap.get(blockKey);
-                if (!tracking) return;
+                if (!tracking || tracking.isSyncing) return;
 
                 const newContent = e.document.getText();
                 if (newContent === tracking.lastSyncContent) {
@@ -63,7 +64,7 @@ export class SyncService {
         const sourceChangeSubscription = vscode.workspace.onDidChangeTextDocument(async (e) => {
             if (e.document.uri.toString() === sourceUri.toString()) {
                 const tracking = this.trackingMap.get(blockKey);
-                if (!tracking) return;
+                if (!tracking || tracking.isSyncing) return;
 
                 // Check if changes affect our range
                 const affectsRange = e.contentChanges.some(change =>
@@ -96,7 +97,8 @@ export class SyncService {
             sourceRange,
             blockKey,
             lastSyncContent: initialContent,
-            disposables
+            disposables,
+            isSyncing: false
         });
     }
 
@@ -108,6 +110,7 @@ export class SyncService {
         if (!tracking) return;
 
         try {
+            tracking.isSyncing = true;
             const edit = new vscode.WorkspaceEdit();
             edit.replace(tracking.sourceUri, tracking.sourceRange, newContent);
 
@@ -121,6 +124,8 @@ export class SyncService {
         } catch (error) {
             console.error('Sync error:', error);
             vscode.window.showErrorMessage(`Failed to sync to source: ${error}`);
+        } finally {
+            tracking.isSyncing = false;
         }
     }
 
@@ -158,6 +163,7 @@ export class SyncService {
         if (!tracking) return;
 
         try {
+            tracking.isSyncing = true;
             const edit = new vscode.WorkspaceEdit();
             const bufferDoc = await vscode.workspace.openTextDocument(tracking.bufferUri);
             const fullRange = new vscode.Range(
@@ -176,6 +182,8 @@ export class SyncService {
         } catch (error) {
             console.error('Source to buffer sync error:', error);
             vscode.window.showErrorMessage(`Failed to reload from source: ${error}`);
+        } finally {
+            tracking.isSyncing = false;
         }
     }
 

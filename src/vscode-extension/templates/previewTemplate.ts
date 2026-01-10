@@ -1,6 +1,74 @@
 import * as vscode from 'vscode';
 
 /**
+ * Configuration interface for webview
+ */
+export interface WebviewConfig {
+    width: string | number;
+    height: string | number;
+    padding: number | number[];
+}
+
+/**
+ * Generate HTML content for the infographic preview webview (for PreviewPanelManager)
+ * Displays only the preview without the text editor, with message-based content updates
+ */
+export function getPreviewWebviewHTML(
+    webview: vscode.Webview,
+    content: string,
+    config: WebviewConfig,
+    context: vscode.ExtensionContext
+): string {
+    const nonce = getNonce();
+    const scriptUri = getRendererScriptUri(webview, context);
+
+    // Using template literal - need to escape properly
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${webview.cspSource}; img-src ${webview.cspSource} https: data:;">
+    <title>Infographic Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: auto; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; background: var(--vscode-editor-background); color: var(--vscode-editor-foreground); }
+        #container { width: 100%; display: flex; align-items: center; justify-content: center; }
+        .loading { padding: 20px; color: var(--vscode-descriptionForeground); text-align: center; }
+        .infographic-error { padding: 20px; background: var(--vscode-inputValidation-errorBackground); border: 1px solid var(--vscode-inputValidation-errorBorder); border-radius: 4px; max-width: 600px; margin: 20px; }
+        .error-icon { font-size: 48px; text-align: center; margin-bottom: 10px; }
+        .error-title { font-weight: bold; font-size: 18px; margin-bottom: 10px; text-align: center; }
+        .error-message { margin-bottom: 10px; text-align: center; white-space: pre-wrap; word-break: break-word; }
+        .export-sidebar { position: fixed; top: 20px; right: 20px; display: flex; flex-direction: row; gap: 8px; z-index: 1000; }
+        .export-button { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 4px; cursor: pointer; font-family: var(--vscode-font-family); font-size: 13px; transition: background-color 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+        .export-button:hover:not(:disabled) { background: var(--vscode-button-hoverBackground); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        .export-button:active:not(:disabled) { transform: translateY(0); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+        .export-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .export-button svg { width: 16px; height: 16px; fill: currentColor; }
+    </style>
+</head>
+<body>
+    <div class="export-sidebar">
+        <button id="export-svg-btn" class="export-button" aria-label="Export as SVG" title="Export as SVG">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1a.5.5 0 0 0-1 0v8.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V1z"/><path d="M3 12.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/></svg>
+            <span>SVG</span>
+        </button>
+        <button id="export-png-btn" class="export-button" aria-label="Export as PNG" title="Export as PNG">
+            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1a.5.5 0 0 0-1 0v8.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V1z"/><path d="M3 12.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/></svg>
+            <span>PNG</span>
+        </button>
+    </div>
+    <div id="container"><div class="loading">Loading renderer...</div></div>
+    <script src="${scriptUri}" nonce="${nonce}" id="renderer-script"></script>
+    <script nonce="${nonce}">
+(function(){const e=acquireVsCodeApi(),t=document.getElementById("container"),n=document.getElementById("export-svg-btn"),o=document.getElementById("export-png-btn");let r=null,i=0;function a(e){"function"==typeof window.InfographicRenderer?.render?(console.log("[Preview] Renderer loaded successfully"),e()):(i++,i>=100?(console.error("[Preview] Renderer failed to load after timeout"),t.innerHTML='<div class="infographic-error"><div class="error-icon">⚠️</div><div class="error-title">Loading Error</div><div class="error-message">Failed to load renderer script.</div></div>'):setTimeout((()=>a(e)),50))}async function s(n,o){try{if(t.innerHTML="",t.dataset.lastContent=n,!n||""===n.trim())return t.innerHTML='<div class="loading">Empty content</div>',void(r=null);if("function"==typeof window.InfographicRenderer?.render){const e={...o,svg:{style:{background:"#FFFFFF"}}},t=await window.InfographicRenderer.render(container,n,e);t&&"function"==typeof t.toDataURL?(r=t,console.log("[Preview] Infographic instance stored for export")):(r=null,console.warn("[Preview] Render returned invalid instance"))}else throw new Error("Renderer not loaded")}catch(n){console.error("[Preview] Rendering error:",n),r=null,t.innerHTML='<div class="infographic-error"><div class="error-icon">⚠️</div><div class="error-title">Rendering Error</div><div class="error-message">'+(n.message||"Unknown error occurred")+"</div></div>",e.postMessage({type:"error",message:n.message||"Unknown error occurred"})}}window.addEventListener("message",(e=>{const n=e.data;switch(n.type){case"updateContent":s(n.content,{});break;case"updateConfig":s(t.dataset.lastContent||"",n.config)}})),n.addEventListener("click",(async function(){if(!r)return void e.postMessage({type:"error",message:"No infographic to export. Please render content first."});try{n.disabled=!0;const t=await r.toDataURL("svg"),o=t.split(",")[1];e.postMessage({type:"exportSvg",svgData:o})}catch(t){console.error("[Export] SVG export error:",t),e.postMessage({type:"error",message:\`Failed to export SVG: \${t.message||"Unknown error"}\`})}finally{n.disabled=!1}})),o.addEventListener("click",(async function(){if(!r)return void e.postMessage({type:"error",message:"No infographic to export. Please render content first."});try{o.disabled=!0;const t=await r.toDataURL("image/png",{encoderOptions:.92}),n=t.split(",")[1];e.postMessage({type:"exportPng",pngData:n})}catch(t){console.error("[Export] PNG export error:",t),e.postMessage({type:"error",message:\`Failed to export PNG: \${t.message||"Unknown error"}\`})}finally{o.disabled=!1}})),a((()=>{s('${escapeForScript(content)}',{})}))})();
+    </script>
+</body>
+</html>`;
+    return html;
+}
+
+/**
  * Generate HTML content for the infographic preview webview
  * Displays only the preview without the text editor
  */

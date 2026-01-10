@@ -69,6 +69,9 @@ export class InfographicEditorProvider implements vscode.CustomTextEditorProvide
                     case MessageTypes.ERROR:
                         handleErrorMessage(message.message);
                         break;
+                    case MessageTypes.CLEAR_ERROR:
+                        // Clear any previous error messages - no action needed in extension
+                        break;
                     case MessageTypes.EDIT:
                         // Update document with edited content
                         await handleEditMessage(document, message.content, { value: this.isUpdatingFromWebview });

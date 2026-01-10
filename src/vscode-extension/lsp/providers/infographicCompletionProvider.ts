@@ -33,6 +33,12 @@ export class InfographicCompletionProvider implements vscode.CompletionItemProvi
       return [];
     }
 
+    // Suppress automatic completions - only allow manual invocation
+    // This prevents unwanted auto-insertion when typing
+    if (context.triggerKind !== vscode.CompletionTriggerKind.Invoke) {
+      return [];
+    }
+
     // Analyze context
     const analysisContext = analyzeContext(document, position);
 

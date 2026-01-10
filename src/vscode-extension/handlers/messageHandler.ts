@@ -7,6 +7,7 @@ import { InfographicService } from '../services/infographicService';
 export const MessageTypes = {
     READY: 'ready',
     ERROR: 'error',
+    CLEAR_ERROR: 'clearError',
     EDIT: 'edit',
     UPDATE_CONTENT: 'updateContent',
     UPDATE_CONFIG: 'updateConfig',

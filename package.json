@@ -22,8 +22,7 @@
   ],
   "activationEvents": [
     "onLanguage:markdown",
-    "onLanguage:infographic",
-    "onCustomEditor:infographicMarkdown.editor"
+    "onLanguage:infographic"
   ],
   "main": "./dist/index.js",
   "contributes": {
@@ -56,22 +55,13 @@
     "markdown.previewScripts": [
       "./dist-preview/index.bundle.js"
     ],
-    "customEditors": [
-      {
-        "viewType": "infographicMarkdown.editor",
-        "displayName": "Infographic Editor",
-        "selector": [
-          {
-            "filenamePattern": "*.infographic"
-          },
-          {
-            "language": "infographic"
-          }
-        ],
-        "priority": "default"
-      }
-    ],
+    "customEditors": [],
     "commands": [
+      {
+        "command": "infographicMarkdown.togglePreview",
+        "title": "Toggle Infographic Preview",
+        "icon": "$(preview)"
+      },
       {
         "command": "infographicMarkdown.editBlock",
         "title": "Edit Infographic Block",

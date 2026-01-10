@@ -76,6 +76,7 @@ export function getEditorWebviewHTML(
             justify-content: center;
             overflow: auto;
             min-width: 200px;
+            position: relative;
         }
         textarea {
             flex: 1;
@@ -127,6 +128,49 @@ export function getEditorWebviewHTML(
             margin-bottom: 10px;
             text-align: center;
         }
+        /* Export Sidebar Styles */
+        .export-sidebar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            z-index: 1000;
+        }
+        .export-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--vscode-font-family);
+            font-size: 13px;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .export-button:hover:not(:disabled) {
+            background: var(--vscode-button-hoverBackground);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .export-button:active:not(:disabled) {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        .export-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .export-button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +180,24 @@ export function getEditorWebviewHTML(
         </div>
         <div class="splitter" id="splitter" tabindex="0"></div>
         <div class="preview-pane">
+            <!-- Export Sidebar -->
+            <div class="export-sidebar">
+                <button id="export-svg-btn" class="export-button" aria-label="Export as SVG" title="Export as SVG">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.5 1a.5.5 0 0 0-1 0v8.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V1z"/>
+                        <path d="M3 12.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                    <span>SVG</span>
+                </button>
+                <button id="export-png-btn" class="export-button" aria-label="Export as PNG" title="Export as PNG">
+                    <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.5 1a.5.5 0 0 0-1 0v8.793L5.354 7.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.793V1z"/>
+                        <path d="M3 12.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                    <span>PNG</span>
+                </button>
+            </div>
+
             <div id="container" 
                  data-width="${config.width}"
                  data-height="${config.height}"
@@ -155,11 +217,14 @@ export function getEditorWebviewHTML(
             const editorPane = document.querySelector('.editor-pane');
             const previewPane = document.querySelector('.preview-pane');
             const mainContainer = document.querySelector('.main-container');
+            const exportSvgBtn = document.getElementById('export-svg-btn');
+            const exportPngBtn = document.getElementById('export-png-btn');
             
             let debounceTimer = null;
             let isDragging = false;
             let startX = 0;
             let startEditorWidth = 0;
+            let currentInfographicInstance = null;
             
             // Editor input handler with debouncing
             editor.addEventListener('input', () => {
@@ -168,7 +233,7 @@ export function getEditorWebviewHTML(
                     const content = editor.value;
                     const cursorPosition = editor.selectionStart;
                     vscode.postMessage({ type: 'edit', content });
-                    renderInfographic(content).then(() => {
+                    renderInfographic(content, {}).then(() => {
                         // Restore focus and cursor position after render
                         editor.focus();
                         editor.setSelectionRange(cursorPosition, cursorPosition);
@@ -299,12 +364,85 @@ export function getEditorWebviewHTML(
                 saveEditorWidth();
             });
             
+            // Export functionality
+            async function exportToSVG() {
+                if (!currentInfographicInstance) {
+                    vscode.postMessage({ 
+                        type: 'error', 
+                        message: 'No infographic to export. Please render content first.'
+                    });
+                    return;
+                }
+                
+                try {
+                    exportSvgBtn.disabled = true;
+                    
+                    // Call toDataURL with 'svg' type
+                    const dataUrl = await currentInfographicInstance.toDataURL('svg');
+                    
+                    // Extract base64 from data URL
+                    const base64Data = dataUrl.split(',')[1];
+                    
+                    vscode.postMessage({ 
+                        type: 'exportSvg', 
+                        svgData: base64Data
+                    });
+                } catch (error) {
+                    console.error('[Export] SVG export error:', error);
+                    vscode.postMessage({ 
+                        type: 'error', 
+                        message: \`Failed to export SVG: \${error.message || 'Unknown error'}\`
+                    });
+                } finally {
+                    exportSvgBtn.disabled = false;
+                }
+            }
+            
+            async function exportToPNG() {
+                if (!currentInfographicInstance) {
+                    vscode.postMessage({ 
+                        type: 'error', 
+                        message: 'No infographic to export. Please render content first.'
+                    });
+                    return;
+                }
+                
+                try {
+                    exportPngBtn.disabled = true;
+                    
+                    // Call toDataURL with 'image/png' type and quality options
+                    const dataUrl = await currentInfographicInstance.toDataURL('image/png', {
+                        encoderOptions: 0.92
+                    });
+                    
+                    // Extract base64 from data URL
+                    const base64Data = dataUrl.split(',')[1];
+                    
+                    vscode.postMessage({ 
+                        type: 'exportPng', 
+                        pngData: base64Data
+                    });
+                } catch (error) {
+                    console.error('[Export] PNG export error:', error);
+                    vscode.postMessage({ 
+                        type: 'error', 
+                        message: \`Failed to export PNG: \${error.message || 'Unknown error'}\`
+                    });
+                } finally {
+                    exportPngBtn.disabled = false;
+                }
+            }
+            
+            // Attach event listeners to export buttons
+            exportSvgBtn.addEventListener('click', exportToSVG);
+            exportPngBtn.addEventListener('click', exportToPNG);
+            
             // Initialize splitter on load
             initializeSplitter();
             
             // Initial render after script loads
             waitForRenderer(() => {
-                renderInfographic('${escapeForScript(content)}');
+                renderInfographic('${escapeForScript(content)}', {});
             });
             
             // Listen for messages from extension
@@ -316,7 +454,7 @@ export function getEditorWebviewHTML(
                         if (editor.value !== message.content && document.activeElement !== editor) {
                             const cursorPosition = editor.selectionStart;
                             editor.value = message.content;
-                            renderInfographic(message.content);
+                            renderInfographic(message.content, {});
                             // Restore cursor position if editor was previously focused
                             if (cursorPosition !== undefined) {
                                 editor.setSelectionRange(cursorPosition, cursorPosition);
@@ -324,28 +462,40 @@ export function getEditorWebviewHTML(
                         }
                         break;
                     case 'updateConfig':
-                        container.dataset.width = message.config.width;
-                        container.dataset.height = message.config.height;
-                        container.dataset.padding = JSON.stringify(message.config.padding);
                         const currentSyntax = editor.value;
                         if (currentSyntax) {
-                            renderInfographic(currentSyntax);
+                            renderInfographic(currentSyntax, message.config);
                         }
                         break;
                 }
             });
             
-            async function renderInfographic(syntax) {
+            async function renderInfographic(syntax, config) {
                 try {
                     container.innerHTML = '';
                     
                     if (!syntax || syntax.trim() === '') {
                         container.innerHTML = '<div class="loading">Empty content</div>';
+                        currentInfographicInstance = null;
+                        vscode.postMessage({ type: 'clearError' });
                         return;
                     }
                     
                     if (typeof window.InfographicRenderer?.render === 'function') {
-                        await window.InfographicRenderer.render(container, syntax);
+                        const options = {
+                            ...config,
+                            svg: { style: { background: '#FFFFFF' } }
+                        };
+                        const instance = await window.InfographicRenderer.render(container, syntax, options);
+                        // Store instance if rendering was successful and has toDataURL method
+                        if (instance && typeof instance.toDataURL === 'function') {
+                            currentInfographicInstance = instance;
+                            console.log('[Editor] Infographic instance stored for export');
+                        } else {
+                            currentInfographicInstance = null;
+                            console.warn('[Editor] Render returned invalid instance');
+                        }
+                        vscode.postMessage({ type: 'clearError' });
                     } else {
                         throw new Error('Renderer not loaded');
                     }
@@ -353,6 +503,7 @@ export function getEditorWebviewHTML(
                     vscode.postMessage({ type: 'ready' });
                 } catch (error) {
                     console.error('Rendering error:', error);
+                    currentInfographicInstance = null;
                     container.innerHTML = \`
                         <div class="infographic-error">
                             <div class="error-icon">⚠️</div>

@@ -3,7 +3,6 @@ import * as vscode from 'vscode';
 import { extendMarkdownItWithInfographic } from '../shared-md-infographic';
 import { configSection } from './config';
 import { injectInfographicConfig } from './themeing';
-import { InfographicEditorProvider } from './customEditor';
 import { InfographicCodeLensProvider } from './codeLensProvider';
 import { InfographicGutterDecorationProvider } from './gutterDecorationProvider';
 import { TempFileCache } from './cache/tempFileCache';
@@ -11,6 +10,7 @@ import { SyncService } from './services/syncService';
 import { SaveHandler } from './handlers/saveHandler';
 import { InfographicPreviewPanel } from './panels/previewPanel';
 import { registerCompletionProvider } from './lsp/providers/infographicCompletionProvider';
+import { PreviewPanelManager } from './services/previewPanelManager';
 
 /**
  * Extension activation function
@@ -19,19 +19,9 @@ import { registerCompletionProvider } from './lsp/providers/infographicCompletio
 export function activate(ctx: vscode.ExtensionContext): {
     extendMarkdownIt(md: MarkdownIt): MarkdownIt;
 } {
-    // Register custom text editor provider for .infographic files
-    const customEditorProvider = new InfographicEditorProvider(ctx);
-    ctx.subscriptions.push(
-        vscode.window.registerCustomEditorProvider(
-            InfographicEditorProvider.viewType,
-            customEditorProvider,
-            {
-                webviewOptions: {
-                    retainContextWhenHidden: true
-                }
-            }
-        )
-    );
+    // Register preview panel manager for .infographic files
+    const previewPanelManager = new PreviewPanelManager(ctx);
+    ctx.subscriptions.push(previewPanelManager);
 
     // Register code lens provider for markdown files
     const codeLensProvider = new InfographicCodeLensProvider(ctx);
@@ -60,6 +50,14 @@ export function activate(ctx: vscode.ExtensionContext): {
             TempFileCache.clearTempUris(ctx);
         }
     });
+
+    // Register command to toggle preview panel for .infographic files
+    ctx.subscriptions.push(
+        vscode.commands.registerCommand(
+            'infographicMarkdown.togglePreview',
+            () => previewPanelManager.togglePreview()
+        )
+    );
 
     // Register command to open editor for code block
     ctx.subscriptions.push(
