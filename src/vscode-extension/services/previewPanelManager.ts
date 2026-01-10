@@ -89,9 +89,15 @@ export class PreviewPanelManager {
         const key = editor.document.uri.toString();
         const panel = this.panels.get(key);
 
+        // If panel exists and is visible, try to hide (no-op for now)
+        // If panel doesn't exist or was disposed, show/create a new one
         if (panel && panel.isVisible()) {
             panel.hide();
         } else {
+            // If panel was disposed, remove it from map
+            if (panel && !panel.isVisible()) {
+                this.panels.delete(key);
+            }
             this.showPreview(editor.document);
         }
     }
@@ -178,6 +184,7 @@ class PreviewPanel {
     private disposables: vscode.Disposable[] = [];
     private debounceTimer: NodeJS.Timeout | null = null;
     private readonly DEBOUNCE_DELAY = 500;
+    private isDisposed = false;
 
     constructor(
         private readonly document: vscode.TextDocument,
@@ -245,6 +252,9 @@ class PreviewPanel {
      * Update preview content immediately
      */
     public updateContent(content: string): void {
+        if (this.isDisposed) {
+            return;
+        }
         this.panel.webview.postMessage({
             type: 'updateContent',
             content: content
@@ -269,6 +279,9 @@ class PreviewPanel {
      * Update preview configuration
      */
     public updateConfig(config: { width: string | number; height: string | number; padding: number | number[] }): void {
+        if (this.isDisposed) {
+            return;
+        }
         this.config = config;
         this.panel.webview.postMessage({
             type: 'updateConfig',
@@ -280,6 +293,9 @@ class PreviewPanel {
      * Reveal the panel
      */
     public reveal(): void {
+        if (this.isDisposed) {
+            return;
+        }
         this.panel.reveal(vscode.ViewColumn.Beside, true);
     }
 
@@ -295,6 +311,9 @@ class PreviewPanel {
      * Check if panel is visible
      */
     public isVisible(): boolean {
+        if (this.isDisposed) {
+            return false;
+        }
         return this.panel.visible;
     }
 
@@ -302,6 +321,11 @@ class PreviewPanel {
      * Dispose the panel
      */
     public dispose(): void {
+        if (this.isDisposed) {
+            return;
+        }
+        this.isDisposed = true;
+
         if (this.debounceTimer) {
             clearTimeout(this.debounceTimer);
             this.debounceTimer = null;
