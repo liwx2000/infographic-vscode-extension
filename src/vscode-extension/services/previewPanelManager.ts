@@ -47,6 +47,13 @@ export class PreviewPanelManager {
                 }
             })
         );
+
+        // If extension is activated while an .infographic file is already active,
+        // show its preview immediately
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor && activeEditor.document.languageId === 'infographic') {
+            this.showPreview(activeEditor.document);
+        }
     }
 
     /**
