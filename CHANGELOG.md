@@ -5,6 +5,81 @@ All notable changes to the "AntV Infographic Preview" extension will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-10
+
+### Added
+- **Language Support & Syntax Highlighting**
+  - Added comprehensive syntax highlighting for `.infographic` files via TextMate grammar
+  - Injected Infographic syntax into embedded markdown code blocks for better integration
+  - Language configuration for bracket matching, auto-closing, and commenting
+  - Enhanced syntax highlighting with support for theme blocks and keywords
+
+- **IntelliSense & Auto-completion**
+  - Implemented LSP-based completion provider for Infographic syntax
+  - Context-aware completions for keywords, structures, themes, and templates
+  - Manual trigger mode to avoid intrusive automatic suggestions
+  - Smart parsing of document context to provide relevant suggestions
+
+- **Preview Panel Management**
+  - New `PreviewPanelManager` for managing multiple preview panels
+  - Toggle preview command with editor/title menu integration
+  - Automatic preview display for active `.infographic` files on extension activation
+  - Separate preview handling for temporary (untitled) infographic files
+  - Export buttons (SVG and PNG) in preview panels
+
+- **Export Functionality Enhancement**
+  - SVG and PNG export support for both preview and editor panels
+  - Base64 data transfer for exported images
+  - Proper instance management to enable export operations
+
+### Improved
+- **Content Synchronization**
+  - Dynamic block range recalculation during content synchronization
+  - Expanded range checking to handle nearby line additions/deletions
+  - Added `isSyncing` flag to prevent circular synchronization issues
+  - Better error handling and logging for sync operations
+
+- **Preview Panel Stability**
+  - Added `isDisposed` flag to prevent operations on disposed panels
+  - Proper cleanup of panel references when disposed
+  - Prevention of reveal and update actions on disposed panels
+
+### Changed
+- **Command Updates**
+  - Updated toggle preview command title to "Open Preview to the Side"
+  - Changed icon to `$(open-preview)` for better visual clarity
+  - Scoped editor/title menu entry to infographic editor language
+
+### Removed
+- **Custom Editor Implementation**
+  - Removed `InfographicEditorProvider` class and related message handlers
+  - Deleted `editorTemplate.ts` (418 lines) containing custom webview HTML
+  - Cleaned up empty `customEditors` array entry from package.json
+  - Eliminated legacy split-view text editing functionality
+
+### Technical Details
+- **New Components**
+  - `PreviewPanelManager`: Centralized management of preview panels for `.infographic` files
+  - `InfographicCompletionProvider`: LSP provider for context-aware auto-completion (336 lines)
+  - `ContextAnalyzer`: Analyzes document context for intelligent completions (193 lines)
+  - `SyntaxParser`: Parses Infographic syntax for completion suggestions (75 lines)
+  - Schema definitions for keywords, structures, templates, and themes
+
+- **Syntax Files**
+  - `infographic.tmLanguage.json`: TextMate grammar for `.infographic` files (128 lines)
+  - `infographic-markdown.json`: Markdown injection grammar (50 lines)
+  - `language-configuration.json`: Language-specific editor behavior (19 lines)
+
+- **Test Files**
+  - Added `test-completion.infographic` for testing auto-completion features
+  - Added `test-syntax-highlighting.md` for validating syntax highlighting
+
+### Statistics
+- **Files Changed**: 21 files
+- **Code Added**: +1,765 lines
+- **Code Removed**: -592 lines
+- **Net Change**: +1,173 lines
+
 ## [1.2.2] - 2026-01-10
 
 ### Added

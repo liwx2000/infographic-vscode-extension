@@ -13,6 +13,7 @@ export class InfographicPreviewPanel {
     private readonly disposables: vscode.Disposable[] = [];
     private isFileChange = false;
     private readonly context: vscode.ExtensionContext;
+    private isDisposed = false;
 
     private constructor(
         panel: vscode.WebviewPanel,
@@ -34,8 +35,8 @@ export class InfographicPreviewPanel {
         document: vscode.TextDocument,
         context: vscode.ExtensionContext
     ): void {
-        // If panel already exists, just reveal it
-        if (InfographicPreviewPanel.currentPanel) {
+        // If panel already exists and is not disposed, just reveal it
+        if (InfographicPreviewPanel.currentPanel && !InfographicPreviewPanel.currentPanel.isDisposed) {
             InfographicPreviewPanel.currentPanel.panel.reveal(vscode.ViewColumn.Beside);
             // Update to track new document if different
             if (InfographicPreviewPanel.currentPanel.document.uri.toString() !== document.uri.toString()) {
@@ -46,7 +47,11 @@ export class InfographicPreviewPanel {
             return;
         }
 
-        // Create new panel
+        // Create new panel (if old one was disposed, clean it up first)
+        if (InfographicPreviewPanel.currentPanel) {
+            InfographicPreviewPanel.currentPanel = undefined;
+        }
+
         const panel = vscode.window.createWebviewPanel(
             'infographicPreview',
             'Infographic Preview',
@@ -67,6 +72,10 @@ export class InfographicPreviewPanel {
      * Update the preview content
      */
     private update(): void {
+        if (this.isDisposed) {
+            return;
+        }
+
         const content = this.document.getText() || ' ';
 
         // Get configuration
@@ -215,6 +224,11 @@ export class InfographicPreviewPanel {
      * Dispose of the panel and cleanup resources
      */
     public dispose(): void {
+        if (this.isDisposed) {
+            return;
+        }
+        this.isDisposed = true;
+
         InfographicPreviewPanel.currentPanel = undefined;
 
         // Dispose of all subscriptions

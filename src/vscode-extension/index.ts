@@ -3,13 +3,14 @@ import * as vscode from 'vscode';
 import { extendMarkdownItWithInfographic } from '../shared-md-infographic';
 import { configSection } from './config';
 import { injectInfographicConfig } from './themeing';
-import { InfographicEditorProvider } from './customEditor';
 import { InfographicCodeLensProvider } from './codeLensProvider';
 import { InfographicGutterDecorationProvider } from './gutterDecorationProvider';
 import { TempFileCache } from './cache/tempFileCache';
 import { SyncService } from './services/syncService';
 import { SaveHandler } from './handlers/saveHandler';
 import { InfographicPreviewPanel } from './panels/previewPanel';
+import { registerCompletionProvider } from './lsp/providers/infographicCompletionProvider';
+import { PreviewPanelManager } from './services/previewPanelManager';
 
 /**
  * Extension activation function
@@ -18,19 +19,9 @@ import { InfographicPreviewPanel } from './panels/previewPanel';
 export function activate(ctx: vscode.ExtensionContext): {
     extendMarkdownIt(md: MarkdownIt): MarkdownIt;
 } {
-    // Register custom text editor provider for .infographic files
-    const customEditorProvider = new InfographicEditorProvider(ctx);
-    ctx.subscriptions.push(
-        vscode.window.registerCustomEditorProvider(
-            InfographicEditorProvider.viewType,
-            customEditorProvider,
-            {
-                webviewOptions: {
-                    retainContextWhenHidden: true
-                }
-            }
-        )
-    );
+    // Register preview panel manager for .infographic files
+    const previewPanelManager = new PreviewPanelManager(ctx);
+    ctx.subscriptions.push(previewPanelManager);
 
     // Register code lens provider for markdown files
     const codeLensProvider = new InfographicCodeLensProvider(ctx);
@@ -49,6 +40,9 @@ export function activate(ctx: vscode.ExtensionContext): {
     const saveHandler = new SaveHandler(ctx);
     ctx.subscriptions.push(saveHandler.register());
 
+    // Register LSP completion provider for Infographic syntax
+    registerCompletionProvider(ctx);
+
     // Register cleanup on deactivation
     ctx.subscriptions.push({
         dispose: () => {
@@ -56,6 +50,31 @@ export function activate(ctx: vscode.ExtensionContext): {
             TempFileCache.clearTempUris(ctx);
         }
     });
+
+    // Register command to toggle preview panel for .infographic files
+    ctx.subscriptions.push(
+        vscode.commands.registerCommand(
+            'infographicMarkdown.togglePreview',
+            () => {
+                const editor = vscode.window.activeTextEditor;
+                if (!editor || editor.document.languageId !== 'infographic') {
+                    vscode.window.showWarningMessage('No .infographic file is currently active');
+                    return;
+                }
+
+                // Check if this is a temp file (untitled document from code block)
+                const isTempFile = TempFileCache.hasTempUri(ctx, editor.document.uri.toString());
+                
+                if (isTempFile) {
+                    // For temp files, use InfographicPreviewPanel (singleton)
+                    InfographicPreviewPanel.createOrShow(editor.document, ctx);
+                } else {
+                    // For regular .infographic files, use PreviewPanelManager
+                    previewPanelManager.togglePreview();
+                }
+            }
+        )
+    );
 
     // Register command to open editor for code block
     ctx.subscriptions.push(
