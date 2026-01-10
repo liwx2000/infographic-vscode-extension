@@ -10,6 +10,7 @@ import { TempFileCache } from './cache/tempFileCache';
 import { SyncService } from './services/syncService';
 import { SaveHandler } from './handlers/saveHandler';
 import { InfographicPreviewPanel } from './panels/previewPanel';
+import { registerCompletionProvider } from './lsp/providers/infographicCompletionProvider';
 
 /**
  * Extension activation function
@@ -48,6 +49,9 @@ export function activate(ctx: vscode.ExtensionContext): {
     // Register save handler for temporary buffers
     const saveHandler = new SaveHandler(ctx);
     ctx.subscriptions.push(saveHandler.register());
+
+    // Register LSP completion provider for Infographic syntax
+    registerCompletionProvider(ctx);
 
     // Register cleanup on deactivation
     ctx.subscriptions.push({

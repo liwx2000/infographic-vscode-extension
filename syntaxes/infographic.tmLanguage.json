@@ -1,0 +1,116 @@
+{
+  "scopeName": "source.infographic",
+  "name": "Infographic",
+  "fileTypes": ["infographic"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#entryLine" },
+    { "include": "#blockKeywords" },
+    { "include": "#propertyKeywords" },
+    { "include": "#listMarker" },
+    { "include": "#booleanValues" },
+    { "include": "#numberValues" },
+    { "include": "#colorValues" },
+    { "include": "#stringValues" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.infographic",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "entryLine": {
+      "patterns": [
+        {
+          "name": "meta.entry.infographic",
+          "match": "^\\s*(infographic)(?:\\s+([a-zA-Z0-9_-]+))?",
+          "captures": {
+            "1": {
+              "name": "keyword.control.entry.infographic"
+            },
+            "2": {
+              "name": "entity.name.type.template.infographic"
+            }
+          }
+        }
+      ]
+    },
+    "blockKeywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.block.infographic",
+          "match": "^\\s*(design|data|theme)\\s*$"
+        }
+      ]
+    },
+    "propertyKeywords": {
+      "patterns": [
+        {
+          "name": "variable.parameter.property.infographic",
+          "match": "^\\s{2,}(structure|gap|item|items|title|desc|label|value|icon|illus|children|colorBg|colorPrimary|palette|stylize|roughness|showIcon|align|align-horizontal|desc-line-number)\\s+"
+        }
+      ]
+    },
+    "listMarker": {
+      "patterns": [
+        {
+          "name": "punctuation.definition.list.infographic",
+          "match": "^\\s*(-)\\s+"
+        }
+      ]
+    },
+    "booleanValues": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.infographic",
+          "match": "\\b(true|false)\\b"
+        }
+      ]
+    },
+    "numberValues": {
+      "patterns": [
+        {
+          "name": "constant.numeric.infographic",
+          "match": "\\b\\d+(\\.\\d+)?\\b"
+        }
+      ]
+    },
+    "colorValues": {
+      "patterns": [
+        {
+          "name": "constant.other.color.infographic",
+          "match": "#[A-Fa-f0-9]{6}|#[A-Fa-f0-9]{3}\\b"
+        }
+      ]
+    },
+    "stringValues": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.infographic",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.infographic",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.infographic",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.infographic",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

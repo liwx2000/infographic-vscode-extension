@@ -1,0 +1,50 @@
+{
+  "scopeName": "source.infographic.embedded.markdown",
+  "injectionSelector": "L:text.html.markdown",
+  "patterns": [
+    {
+      "include": "#infographic-code-block"
+    }
+  ],
+  "repository": {
+    "infographic-code-block": {
+      "begin": "(^|\\G)(\\s*)(```|~~~)\\s*(?i:(infographic))(\\s+[^`~]*)?$",
+      "name": "markup.code.infographic.markdown",
+      "end": "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
+      "beginCaptures": {
+        "3": {
+          "name": "punctuation.definition.markdown"
+        },
+        "4": {
+          "name": "fenced_code.block.language.markdown"
+        },
+        "5": {
+          "name": "fenced_code.block.language.attributes.markdown"
+        }
+      },
+      "endCaptures": {
+        "3": {
+          "name": "punctuation.definition.markdown"
+        }
+      },
+      "patterns": [
+        {
+          "begin": "(^|\\G)(\\s*)(.*)",
+          "while": "(^|\\G)(?!\\s*([`~]{3,})\\s*$)",
+          "contentName": "meta.embedded.block.infographic",
+          "patterns": [
+            { "include": "source.infographic#comments" },
+            { "include": "source.infographic#entryLine" },
+            { "include": "source.infographic#blockKeywords" },
+            { "include": "source.infographic#propertyKeywords" },
+            { "include": "source.infographic#listMarker" },
+            { "include": "source.infographic#booleanValues" },
+            { "include": "source.infographic#numberValues" },
+            { "include": "source.infographic#colorValues" },
+            { "include": "source.infographic#stringValues" }
+          ]
+        }
+      ]
+    }
+  }
+}
