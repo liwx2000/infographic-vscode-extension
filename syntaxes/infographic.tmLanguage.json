@@ -41,8 +41,20 @@
     "blockKeywords": {
       "patterns": [
         {
+          "name": "meta.block.theme.infographic",
+          "match": "^\\s*(theme)(?:\\s+([a-zA-Z0-9_-]+))?\\s*$",
+          "captures": {
+            "1": {
+              "name": "keyword.control.block.infographic"
+            },
+            "2": {
+              "name": "entity.name.type.theme.infographic"
+            }
+          }
+        },
+        {
           "name": "keyword.control.block.infographic",
-          "match": "^\\s*(design|data|theme)\\s*$"
+          "match": "^\\s*(design|data)\\s*$"
         }
       ]
     },
