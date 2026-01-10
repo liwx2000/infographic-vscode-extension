@@ -55,7 +55,6 @@
     "markdown.previewScripts": [
       "./dist-preview/index.bundle.js"
     ],
-    "customEditors": [],
     "commands": [
       {
         "command": "infographicMarkdown.togglePreview",
