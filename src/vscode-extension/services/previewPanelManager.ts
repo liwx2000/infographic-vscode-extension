@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { configSection } from '../config';
 import { getPreviewWebviewHTML } from '../templates/previewTemplate';
 import { MessageTypes, handleErrorMessage, handleExportMessage } from '../handlers/messageHandler';
+import { TempFileCache } from '../cache/tempFileCache';
 
 /**
  * Manages preview webview panels for .infographic files
@@ -16,7 +17,12 @@ export class PreviewPanelManager {
         this.disposables.push(
             vscode.window.onDidChangeActiveTextEditor(editor => {
                 if (editor && editor.document.languageId === 'infographic') {
-                    this.showPreview(editor.document);
+                    // Don't auto-show preview for temp files (untitled documents from code blocks)
+                    // They are managed by InfographicPreviewPanel
+                    const isTempFile = TempFileCache.hasTempUri(this.context, editor.document.uri.toString());
+                    if (!isTempFile) {
+                        this.showPreview(editor.document);
+                    }
                 }
             })
         );
@@ -52,7 +58,11 @@ export class PreviewPanelManager {
         // show its preview immediately
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor && activeEditor.document.languageId === 'infographic') {
-            this.showPreview(activeEditor.document);
+            // Don't auto-show preview for temp files
+            const isTempFile = TempFileCache.hasTempUri(this.context, activeEditor.document.uri.toString());
+            if (!isTempFile) {
+                this.showPreview(activeEditor.document);
+            }
         }
     }
 

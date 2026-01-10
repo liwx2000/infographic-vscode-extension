@@ -55,7 +55,24 @@ export function activate(ctx: vscode.ExtensionContext): {
     ctx.subscriptions.push(
         vscode.commands.registerCommand(
             'infographicMarkdown.togglePreview',
-            () => previewPanelManager.togglePreview()
+            () => {
+                const editor = vscode.window.activeTextEditor;
+                if (!editor || editor.document.languageId !== 'infographic') {
+                    vscode.window.showWarningMessage('No .infographic file is currently active');
+                    return;
+                }
+
+                // Check if this is a temp file (untitled document from code block)
+                const isTempFile = TempFileCache.hasTempUri(ctx, editor.document.uri.toString());
+                
+                if (isTempFile) {
+                    // For temp files, use InfographicPreviewPanel (singleton)
+                    InfographicPreviewPanel.createOrShow(editor.document, ctx);
+                } else {
+                    // For regular .infographic files, use PreviewPanelManager
+                    previewPanelManager.togglePreview();
+                }
+            }
         )
     );
 
