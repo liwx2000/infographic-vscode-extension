@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
  * Configuration interface for webview
  */
 export interface WebviewConfig {
-    theme: string;
     width: string | number;
     height: string | number;
     padding: number | number[];
@@ -138,7 +137,6 @@ export function getEditorWebviewHTML(
         <div class="splitter" id="splitter" tabindex="0"></div>
         <div class="preview-pane">
             <div id="container" 
-                 data-theme="${config.theme}"
                  data-width="${config.width}"
                  data-height="${config.height}"
                  data-padding="${JSON.stringify(config.padding).replace(/"/g, '&quot;')}">
@@ -326,7 +324,6 @@ export function getEditorWebviewHTML(
                         }
                         break;
                     case 'updateConfig':
-                        container.dataset.theme = message.config.theme;
                         container.dataset.width = message.config.width;
                         container.dataset.height = message.config.height;
                         container.dataset.padding = JSON.stringify(message.config.padding);

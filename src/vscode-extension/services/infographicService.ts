@@ -68,16 +68,18 @@ export class InfographicService {
     private static getDefaultExportUri(document: vscode.TextDocument, format: 'svg' | 'png'): vscode.Uri {
         const documentUri = document.uri;
         
-        // If document has a valid file path, use its directory
+        // Always use home directory as default export location
+        let fileName: string;
+        
+        // If document has a valid file path, use its name
         if (documentUri.scheme === 'file' && documentUri.fsPath) {
-            const docDir = path.dirname(documentUri.fsPath);
             const docName = path.basename(documentUri.fsPath, path.extname(documentUri.fsPath));
-            const fileName = `${docName}.${format}`;
-            return vscode.Uri.file(path.join(docDir, fileName));
+            fileName = `${docName}.${format}`;
+        } else {
+            // For untitled or temp files, use generic name
+            fileName = `infographic.${format}`;
         }
         
-        // For untitled or temp files, use home directory
-        const fileName = `infographic.${format}`;
         return vscode.Uri.file(path.join(os.homedir(), fileName));
     }
 }

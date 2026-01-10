@@ -5,6 +5,23 @@ All notable changes to the "AntV Infographic Preview" extension will be document
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2] - 2026-01-10
+
+### Added
+- **Export Functionality**
+  - SVG/PNG export button in preview panel toolbar
+
+### Improved
+- Add default background color in preview
+
+### Changed
+- **Dependency Updates**
+  - Upgraded @antv/infographic from 0.1.4 to 0.2.7
+
+### Removed
+- **Theme Configuration**
+  - Removed theme configuration support
+
 ## [1.2.1] - 2026-01-04
 
 ### Changed

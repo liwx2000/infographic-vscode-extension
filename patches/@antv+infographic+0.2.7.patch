@@ -1,0 +1,48 @@
+diff --git a/node_modules/@antv/infographic/esm/renderer/composites/background.js b/node_modules/@antv/infographic/esm/renderer/composites/background.js
+index 224ceca..a80ae7a 100644
+--- a/node_modules/@antv/infographic/esm/renderer/composites/background.js
++++ b/node_modules/@antv/infographic/esm/renderer/composites/background.js
+@@ -9,7 +9,10 @@ export function renderBackground(svg, options) {
+     if (container)
+         container.style.backgroundColor = background || 'none';
+     const element = getElementByRole(svg, "background" /* ElementTypeEnum.Background */);
+-    svg.style.backgroundColor = background;
++    // Only set backgroundColor if not explicitly provided in svg.style options
++    if (!(options.svg?.style?.backgroundColor) && !(options.svg?.style?.background)) {
++        svg.style.backgroundColor = background;
++    }
+     if (element) {
+         element.setAttribute('fill', background);
+     }
+diff --git a/node_modules/@antv/infographic/lib/renderer/composites/background.js b/node_modules/@antv/infographic/lib/renderer/composites/background.js
+index 2b21f7b..13d5f34 100644
+--- a/node_modules/@antv/infographic/lib/renderer/composites/background.js
++++ b/node_modules/@antv/infographic/lib/renderer/composites/background.js
+@@ -12,7 +12,10 @@ function renderBackground(svg, options) {
+     if (container)
+         container.style.backgroundColor = background || 'none';
+     const element = (0, utils_1.getElementByRole)(svg, "background" /* ElementTypeEnum.Background */);
+-    svg.style.backgroundColor = background;
++    // Only set backgroundColor if not explicitly provided in svg.style options
++    if (!(options.svg?.style?.backgroundColor) && !(options.svg?.style?.background)) {
++        svg.style.backgroundColor = background;
++    }
+     if (element) {
+         element.setAttribute('fill', background);
+     }
+diff --git a/node_modules/@antv/infographic/src/renderer/composites/background.ts b/node_modules/@antv/infographic/src/renderer/composites/background.ts
+index bdaa109..8788c64 100644
+--- a/node_modules/@antv/infographic/src/renderer/composites/background.ts
++++ b/node_modules/@antv/infographic/src/renderer/composites/background.ts
+@@ -16,7 +16,10 @@ export function renderBackground(
+   if (container) container.style.backgroundColor = background || 'none';
+   const element = getElementByRole(svg, ElementTypeEnum.Background);
+ 
+-  svg.style.backgroundColor = background;
++  // Only set backgroundColor if not explicitly provided in svg.style options
++  if (!options.svg?.style?.backgroundColor && !options.svg?.style?.background) {
++    svg.style.backgroundColor = background;
++  }
+ 
+   if (element) {
+     element.setAttribute('fill', background);

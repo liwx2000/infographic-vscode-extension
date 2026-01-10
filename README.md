@@ -77,8 +77,6 @@ Edit infographic code blocks in a dedicated editor:
 
 ## Configuration
 
-- `infographicMarkdown.theme` — Configures the theme used for rendered infographics. Supported values are: `"auto"`, `"light"`, `"dark"`. The default is `"auto"` which automatically follows VS Code's color theme.
-
 - `infographicMarkdown.width` — Width of the rendered infographic. Supports absolute values (e.g., `"500"`) or percentages (e.g., `"100%"`). The default is `"100%"`.
 
 - `infographicMarkdown.height` — Height of the rendered infographic. Supports absolute values (e.g., `"400"`) or percentages (e.g., `"100%"`). The default is `"100%"`.

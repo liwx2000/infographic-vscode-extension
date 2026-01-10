@@ -2,7 +2,7 @@
   "name": "vscode-infographic-markdown",
   "displayName": "Infographic Markdown Preview",
   "description": "Render AntV Infographic visualizations in Markdown preview",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "publisher": "liwx2000",
   "icon": "doc/logo.png",
   "repository": "github:liwx2000/infographic-vscode-extension",
@@ -68,21 +68,6 @@
     "configuration": {
       "title": "Infographic Markdown",
       "properties": {
-        "infographicMarkdown.theme": {
-          "type": "string",
-          "enum": [
-            "auto",
-            "light",
-            "dark"
-          ],
-          "default": "auto",
-          "description": "Theme for rendered infographics. 'auto' follows VSCode's color theme, 'light' forces light theme, 'dark' forces dark theme.",
-          "enumDescriptions": [
-            "Automatically detect and follow VSCode's color theme",
-            "Always use light theme",
-            "Always use dark theme"
-          ]
-        },
         "infographicMarkdown.width": {
           "type": [
             "string",
@@ -140,7 +125,7 @@
     "webpack-cli": "^5.1.0"
   },
   "dependencies": {
-    "@antv/infographic": "^0.1.0",
+    "@antv/infographic": "^0.2.7",
     "eventemitter3": "^5.0.1",
     "markdown-it": "^13.0.0"
   }
