@@ -38,6 +38,7 @@ export function loadInfographicConfig(): InfographicConfig {
             const width = configElement.getAttribute('data-width');
             const height = configElement.getAttribute('data-height');
             const paddingStr = configElement.getAttribute('data-padding');
+            const backgroundColor = configElement.getAttribute('data-background-color');
 
             const currentConfig: InfographicConfig = {
                 width: width || DEFAULT_CONFIG.width,
@@ -134,7 +135,8 @@ function renderInfographicElement(
                     container: infographicContainer,
                     width: config.width,
                     height: config.height,
-                    padding: config.padding
+                    padding: config.padding,
+                    svg: { style: { background: '#FFFFFF' } }
                 });
 
                 // Render the infographic

@@ -1,39 +1,41 @@
-import { Infographic } from '@antv/infographic';
-import { InfographicConfig } from './index';
+import { Infographic, InfographicOptions } from '@antv/infographic';
 
 /**
  * Render infographic syntax directly in a container with provided configuration.
  * This is used by custom editors and interactive editors where config comes from extension settings,
  * not from injected DOM elements.
+ * Returns the Infographic instance for export operations.
  */
 export async function renderInfographicWithConfig(
     container: HTMLElement,
     syntax: string,
-    config: InfographicConfig
-): Promise<void> {
+    config: Partial<InfographicOptions>
+): Promise<Infographic | null> {
     try {      
         // Clear container
         container.innerHTML = '';
         container.classList.remove('error-state');
 
         if (!syntax || syntax.trim() === '') {
-            return;
+            return null;
         }
 
         // Create new infographic instance with configuration
         const infographic = new Infographic({
             container: container,
-            width: config.width,
-            height: config.height,
-            padding: config.padding
+            ...config
         });
 
         // Render the infographic
         infographic.render(syntax);
+        
+        // Return the instance for export operations
+        return infographic;
     } catch (error) {
         console.error('Error rendering infographic:', error);
         displayEditorError(container, 'Failed to render infographic. Please check your syntax.', error as Error);
         // Don't throw - just display the error
+        return null;
     }
 }
 
@@ -50,24 +52,4 @@ function displayEditorError(container: HTMLElement, message: string, error?: Err
         </div>
     `;
     container.classList.add('error-state');
-}
-
-/**
- * Parse configuration from data attributes (for webview contexts)
- */
-export function parseConfigFromAttributes(element: HTMLElement): InfographicConfig {
-    const width = element.dataset.width || '100%';
-    const height = element.dataset.height || '100%';
-    const paddingStr = element.dataset.padding;
-
-    let padding: number | number[] = 0;
-    if (paddingStr) {
-        try {
-            padding = JSON.parse(paddingStr);
-        } catch (e) {
-            console.warn('Failed to parse padding, using default:', e);
-        }
-    }
-
-    return { width, height, padding };
 }

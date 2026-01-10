@@ -178,7 +178,9 @@ export class InfographicPreviewPanel {
             });
 
             if (uri) {
-                const buffer = Buffer.from(pngBase64.split(',')[1], 'base64');
+                // Handle both formats: with or without data URL prefix
+                const base64Data = pngBase64.includes(',') ? pngBase64.split(',')[1] : pngBase64;
+                const buffer = Buffer.from(base64Data, 'base64');
                 await vscode.workspace.fs.writeFile(uri, buffer);
                 vscode.window.showInformationMessage('PNG exported successfully!');
             }
@@ -198,7 +200,9 @@ export class InfographicPreviewPanel {
             });
 
             if (uri) {
-                const buffer = Buffer.from(svgBase64.split(',')[1], 'base64');
+                // Handle both formats: with or without data URL prefix
+                const base64Data = svgBase64.includes(',') ? svgBase64.split(',')[1] : svgBase64;
+                const buffer = Buffer.from(base64Data, 'base64');
                 await vscode.workspace.fs.writeFile(uri, buffer);
                 vscode.window.showInformationMessage('SVG exported successfully!');
             }
