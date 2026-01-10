@@ -66,9 +66,15 @@ export class SyncService {
                 const tracking = this.trackingMap.get(blockKey);
                 if (!tracking || tracking.isSyncing) return;
 
-                // Check if changes affect our range
+                // Check if changes affect a broader range around our tracked block
+                // This handles cases where lines are added/deleted near the block
+                const expandedRange = new vscode.Range(
+                    new vscode.Position(Math.max(0, sourceRange.start.line - 5), 0),
+                    new vscode.Position(sourceRange.end.line + 10, 0)
+                );
+                
                 const affectsRange = e.contentChanges.some(change =>
-                    change.range.intersection(sourceRange) !== undefined
+                    change.range.intersection(expandedRange) !== undefined
                 );
 
                 if (affectsRange) {
@@ -103,6 +109,63 @@ export class SyncService {
     }
 
     /**
+     * Recalculate the source range by finding the current block boundaries
+     */
+    private static async recalculateSourceRange(tracking: SyncTracking): Promise<vscode.Range | undefined> {
+        try {
+            const sourceDoc = await vscode.workspace.openTextDocument(tracking.sourceUri);
+            const lines = sourceDoc.getText().split('\n');
+            
+            // Start searching from the stored range as a hint
+            const hintLine = tracking.sourceRange.start.line;
+            const searchStart = Math.max(0, hintLine - 10); // Look 10 lines before
+            const searchEnd = Math.min(lines.length, hintLine + 50); // Look 50 lines after
+            
+            // Find ```infographic blocks in the search range
+            const infographicBlockRegex = /^```infographic\s*$/i;
+            
+            for (let i = searchStart; i < searchEnd; i++) {
+                const line = lines[i];
+                
+                if (infographicBlockRegex.test(line.trim())) {
+                    const openingFenceLine = i;
+                    let closingFenceLine = i + 1;
+                    
+                    // Find the closing fence
+                    while (closingFenceLine < lines.length) {
+                        if (lines[closingFenceLine].trim() === '```') {
+                            break;
+                        }
+                        closingFenceLine++;
+                    }
+                    
+                    // Check if we found a valid block
+                    if (closingFenceLine < lines.length) {
+                        // Content range excludes both fences
+                        const contentRange = new vscode.Range(
+                            new vscode.Position(openingFenceLine + 1, 0),
+                            new vscode.Position(closingFenceLine, 0)
+                        );
+                        
+                        // If this is close to our hint, it's likely the right block
+                        if (Math.abs(openingFenceLine - hintLine) <= 10) {
+                            console.log(`[SyncService] Recalculated range: ${openingFenceLine + 1}-${closingFenceLine}`);
+                            return contentRange;
+                        }
+                    }
+                }
+            }
+            
+            // Block not found
+            console.warn('[SyncService] Could not find infographic block near stored range');
+            return undefined;
+        } catch (error) {
+            console.error('[SyncService] Error recalculating source range:', error);
+            return undefined;
+        }
+    }
+
+    /**
      * Synchronize buffer content to source markdown range
      */
     private static async syncBufferToSource(blockKey: string, newContent: string): Promise<void> {
@@ -111,13 +174,28 @@ export class SyncService {
 
         try {
             tracking.isSyncing = true;
+            
+            // Recalculate the source range to handle dynamic line changes
+            const updatedRange = await this.recalculateSourceRange(tracking);
+            
+            if (!updatedRange) {
+                console.error('[SyncService] Cannot sync: block not found in source');
+                vscode.window.showWarningMessage('Infographic block not found in source document. Sync disabled.');
+                this.cleanup(blockKey);
+                return;
+            }
+            
+            // Update the stored range
+            tracking.sourceRange = updatedRange;
+            
             const edit = new vscode.WorkspaceEdit();
-            edit.replace(tracking.sourceUri, tracking.sourceRange, newContent);
+            edit.replace(tracking.sourceUri, updatedRange, newContent);
 
             const success = await vscode.workspace.applyEdit(edit);
 
             if (success) {
                 tracking.lastSyncContent = newContent;
+                console.log(`[SyncService] Synced buffer to source: ${newContent.substring(0, 50)}...`);
             } else {
                 vscode.window.showErrorMessage('Failed to sync changes to markdown source');
             }
@@ -137,9 +215,21 @@ export class SyncService {
         if (!tracking) return;
 
         try {
+            // Recalculate the source range to handle dynamic line changes
+            const updatedRange = await this.recalculateSourceRange(tracking);
+            
+            if (!updatedRange) {
+                console.warn('[SyncService] Block not found during source change, cleaning up');
+                this.cleanup(blockKey);
+                return;
+            }
+            
+            // Update the stored range
+            tracking.sourceRange = updatedRange;
+            
             // Open source document to get current content
             const sourceDoc = await vscode.workspace.openTextDocument(tracking.sourceUri);
-            const sourceContent = sourceDoc.getText(tracking.sourceRange);
+            const sourceContent = sourceDoc.getText(updatedRange);
 
             // Open buffer document to get current content
             const bufferDoc = await vscode.workspace.openTextDocument(tracking.bufferUri);
@@ -176,6 +266,7 @@ export class SyncService {
 
             if (success) {
                 tracking.lastSyncContent = newContent;
+                console.log(`[SyncService] Synced source to buffer: ${newContent.substring(0, 50)}...`);
             } else {
                 vscode.window.showErrorMessage('Failed to reload content from source');
             }
